@@ -3,6 +3,7 @@
 import { useState, type ChangeEvent } from "react";
 
 export default function Uploadpage() {
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState("");
 
@@ -43,6 +44,26 @@ export default function Uploadpage() {
     setSelectedFile(file);
   };
 
+
+  const handleUpload = async() => {
+  if (!selectedFile) {
+    setError("Please select a file first");
+    return;
+  }
+
+    const formData = new FormData();
+  formData.append("file", selectedFile);
+
+   const response = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  console.log(data);
+};
+
   return (
     <div>
       <h1>Upload page</h1>
@@ -58,6 +79,9 @@ export default function Uploadpage() {
       {selectedFile && (
         <p>Selected: {selectedFile.name}</p>
       )}
+
+
+      <button onClick={handleUpload}>Upload</button>
     </div>
   );
 }
