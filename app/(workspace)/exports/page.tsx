@@ -33,7 +33,7 @@ export default async function ExportsPage() {
           actionLabel="View imports"
         />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="surface-card overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-border bg-surface-muted text-xs font-medium uppercase tracking-wide text-muted">
               <tr>

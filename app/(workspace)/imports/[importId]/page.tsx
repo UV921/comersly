@@ -49,7 +49,7 @@ export default async function ImportDetailPage({
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-lg border border-border bg-surface px-4 py-3">
+        <div className="surface-card px-4 py-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             Status
           </p>
@@ -57,13 +57,13 @@ export default async function ImportDetailPage({
             <ImportStatusBadge status={importRecord.status} />
           </div>
         </div>
-        <div className="rounded-lg border border-border bg-surface px-4 py-3">
+        <div className="surface-card px-4 py-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             Uploaded
           </p>
           <p className="mt-2 text-sm">{formatDateTime(importRecord.createdAt)}</p>
         </div>
-        <div className="rounded-lg border border-border bg-surface px-4 py-3">
+        <div className="surface-card px-4 py-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             Rows
           </p>
@@ -71,7 +71,7 @@ export default async function ImportDetailPage({
             {counts.content}/{importRecord.totalRows} ready
           </p>
         </div>
-        <div className="rounded-lg border border-border bg-surface px-4 py-3">
+        <div className="surface-card px-4 py-3">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             Format
           </p>
@@ -80,13 +80,13 @@ export default async function ImportDetailPage({
       </div>
 
       {importRecord.status === "FAILED" && importRecord.failureMessage ? (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-failed">
+        <div className="mb-6 rounded-2xl border border-failed/20 bg-[var(--badge-danger-bg)] px-4 py-3 text-sm text-failed">
           {importRecord.failureMessage}
         </div>
       ) : null}
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold">Processing pipeline</h2>
+        <h2 className="mb-3 font-serif text-2xl tracking-tight">Processing pipeline</h2>
         <p className="mb-3 text-sm text-muted">
           Counts are taken from persisted stage results. A stage is complete
           for the import only when every product has that result.
@@ -95,12 +95,12 @@ export default async function ImportDetailPage({
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold">Export</h2>
+        <h2 className="mb-3 font-serif text-2xl tracking-tight">Export</h2>
         <ExportActions importId={importRecord.id} status={importRecord.status} />
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold">Products</h2>
+        <h2 className="mb-3 font-serif text-2xl tracking-tight">Products</h2>
         {products.length === 0 ? (
           <p className="text-sm text-muted">No products found</p>
         ) : (

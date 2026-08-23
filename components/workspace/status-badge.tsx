@@ -2,11 +2,11 @@ import { cn } from "@/lib/cn";
 import type { ImportStatus } from "@/shared/contracts/ingestion";
 
 const IMPORT_STYLES: Record<ImportStatus, string> = {
-  PENDING: "bg-surface-muted text-pending",
-  PROCESSING: "bg-amber-50 text-processing",
-  COMPLETED: "bg-emerald-50 text-completed",
-  PARTIALLY_COMPLETED: "bg-teal-50 text-completed",
-  FAILED: "bg-red-50 text-failed",
+  PENDING: "bg-[var(--badge-neutral-bg)] text-pending",
+  PROCESSING: "bg-[var(--badge-warning-bg)] text-processing",
+  COMPLETED: "bg-[var(--badge-success-bg)] text-completed",
+  PARTIALLY_COMPLETED: "bg-[var(--badge-success-bg)] text-completed",
+  FAILED: "bg-[var(--badge-danger-bg)] text-failed",
 };
 
 const IMPORT_LABELS: Record<ImportStatus, string> = {
@@ -21,7 +21,7 @@ export function ImportStatusBadge({ status }: { status: ImportStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
         IMPORT_STYLES[status],
       )}
     >
@@ -32,22 +32,20 @@ export function ImportStatusBadge({ status }: { status: ImportStatus }) {
 
 export function NeedsReviewBadge() {
   return (
-    <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-review">
+    <span className="inline-flex items-center rounded-full bg-[var(--badge-warning-bg)] px-2 py-0.5 text-xs font-medium text-review">
       Needs review
     </span>
   );
 }
 
-export function ProductStateBadge({
-  isReady,
-}: {
-  isReady: boolean;
-}) {
+export function ProductStateBadge({ isReady }: { isReady: boolean }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
-        isReady ? "bg-emerald-50 text-completed" : "bg-amber-50 text-processing",
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+        isReady
+          ? "bg-[var(--badge-success-bg)] text-completed"
+          : "bg-[var(--badge-warning-bg)] text-processing",
       )}
     >
       {isReady ? "Ready" : "Processing"}
@@ -65,15 +63,15 @@ export function ConfidenceBadge({
   }
 
   const styles = {
-    HIGH: "bg-emerald-50 text-completed",
-    MEDIUM: "bg-amber-50 text-processing",
-    LOW: "bg-surface-muted text-pending",
+    HIGH: "bg-[var(--badge-success-bg)] text-completed",
+    MEDIUM: "bg-[var(--badge-warning-bg)] text-processing",
+    LOW: "bg-[var(--badge-neutral-bg)] text-pending",
   } as const;
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
         styles[confidence],
       )}
     >

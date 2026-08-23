@@ -5,18 +5,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import { Logo } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/cn";
 
 const NAV = [
-  { href: "/", label: "Dashboard" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/imports", label: "Imports" },
   { href: "/products", label: "Products" },
   { href: "/exports", label: "Exports" },
 ];
 
 function isActive(pathname: string, href: string) {
-  if (href === "/") {
-    return pathname === "/";
+  if (href === "/dashboard") {
+    return pathname === "/dashboard";
   }
 
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -40,7 +42,7 @@ function NavLinks({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "rounded-md px-2.5 py-2 text-sm font-medium",
+              "rounded-xl px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-accent-soft text-accent"
                 : "text-muted hover:bg-surface-muted hover:text-foreground",
@@ -59,17 +61,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-full lg:grid lg:grid-cols-[240px_minmax(0,1fr)]">
+    <div className="min-h-full lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
       <aside className="hidden border-r border-border bg-surface lg:flex lg:min-h-full lg:flex-col">
-        <div className="flex h-14 items-center border-b border-border px-4">
-          <Link href="/" className="text-sm font-semibold tracking-wide text-accent">
-            Comersly
-          </Link>
+        <div className="flex h-16 items-center border-b border-border px-4">
+          <Logo href="/dashboard" />
         </div>
         <div className="flex-1 px-3 py-4">
           <NavLinks pathname={pathname} />
         </div>
-        <div className="border-t border-border px-4 py-3">
+        <div className="space-y-3 border-t border-border px-4 py-4">
+          <ThemeToggle compact />
           <UserButton
             appearance={{
               elements: {
@@ -81,16 +82,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-h-full flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
-          <Link href="/" className="text-sm font-semibold tracking-wide text-accent">
-            Comersly
-          </Link>
+      <div className="flex min-h-full flex-col bg-background">
+        <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
+          <Logo href="/dashboard" />
           <div className="flex items-center gap-3">
+            <ThemeToggle compact />
             <UserButton />
             <button
               type="button"
-              className="rounded-md border border-border px-2.5 py-1.5 text-sm"
+              className="rounded-full border border-border px-3 py-1.5 text-sm"
               onClick={() => setOpen((value) => !value)}
               aria-expanded={open}
             >

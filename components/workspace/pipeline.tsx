@@ -27,7 +27,7 @@ export function ImportPipeline({ counts }: { counts: PipelineCounts }) {
           <li
             key={`${stage.label}-${index}`}
             className={cn(
-              "rounded-lg border px-3 py-2",
+              "rounded-xl border px-3 py-2 shadow-[var(--card-shadow)]",
               complete
                 ? "border-accent/20 bg-accent-soft"
                 : "border-border bg-surface",
@@ -57,12 +57,12 @@ export function ProductPipeline({
       {stages.map((stage) => (
         <li
           key={stage.label}
-          className={cn(
-            "rounded-md border px-2.5 py-1 text-xs font-medium",
-            stage.done
-              ? "border-accent/20 bg-accent-soft text-accent"
-              : "border-border bg-surface text-muted",
-          )}
+            className={cn(
+              "rounded-full border px-2.5 py-1 text-xs font-medium",
+              stage.done
+                ? "border-accent/20 bg-accent-soft text-accent"
+                : "border-border bg-surface text-muted",
+            )}
         >
           {stage.label}
         </li>

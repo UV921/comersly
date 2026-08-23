@@ -15,14 +15,11 @@ export function MetricCards({ metrics }: { metrics: DashboardMetrics }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
       {CARDS.map((card) => (
-        <div
-          key={card.key}
-          className="rounded-lg border border-border bg-surface px-4 py-3"
-        >
+        <div key={card.key} className="surface-card px-4 py-4">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">
             {card.label}
           </p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums">
+          <p className="mt-2 font-serif text-3xl tracking-tight tabular-nums">
             {metrics[card.key]}
           </p>
         </div>
