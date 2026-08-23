@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import  {parseSpreadsheet}  from "@/server/services/spreadsheet-parser";
+import { uploadFile } from "@/server/services/file-storage";
 
 export async function POST(request: Request) {
   const { isAuthenticated, userId } = await auth();
@@ -57,6 +58,8 @@ const sourceFormat = fileName.endsWith(".csv")
   ? "CSV"
   : "XLSX";
 
+  const storageKey = await uploadFile(file, userId);
+
 await parseSpreadsheet(file,sourceFormat);
   return Response.json({
     message: "File received successfully",
@@ -66,7 +69,8 @@ await parseSpreadsheet(file,sourceFormat);
       size: file.size,
       type: file.type,
     },
-    sourceFormat
+    sourceFormat,
+    storageKey
   });
 
 }

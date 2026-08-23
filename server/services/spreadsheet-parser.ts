@@ -5,6 +5,7 @@ import type {
   SourceFormat,
   SourceRawData,
   SourceMetadata,
+  JsonValue,
 } from "@/shared/contracts/ingestion";
 
 function toJsonValue(value: unknown): JsonValue {
