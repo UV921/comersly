@@ -1,6 +1,10 @@
+import { createImport } from "@/server/db/queries/import";
 import { auth } from "@clerk/nextjs/server";
 import  {parseSpreadsheet}  from "@/server/services/spreadsheet-parser";
 import { uploadFile } from "@/server/services/file-storage";
+import { createIngestedItems } from "@/server/db/queries/ingested-items";
+import { inngest } from "@/server/inngest/client";
+import { INGESTIIN_ITEM_READY_EVENT } from "@/shared/contracts/ingestion-event";
 
 export async function POST(request: Request) {
   const { isAuthenticated, userId } = await auth();
@@ -58,9 +62,35 @@ const sourceFormat = fileName.endsWith(".csv")
   ? "CSV"
   : "XLSX";
 
-  const storageKey = await uploadFile(file, userId);
+//   const storageKey = await uploadFile(file, userId);
+const normalizedRows = await parseSpreadsheet(file, sourceFormat);
 
-await parseSpreadsheet(file,sourceFormat);
+const storageKey = await uploadFile(file, userId);
+
+const createdImport = await createImport({
+  clerkUserId: userId,
+  fileName: file.name,
+  sourceFormat,
+  storageKey,
+});
+
+const ingestedItems = await createIngestedItems({
+  importId: createdImport.id,
+  sourceFormat,
+  rows: normalizedRows,
+});
+
+
+await inngest.send(
+  ingestedItems.map((item) => ({
+    name: INGESTIIN_ITEM_READY_EVENT,
+    data: {
+      itemId: item.id,
+    },
+  })),
+);
+
+
   return Response.json({
     message: "File received successfully",
     userId,
@@ -70,7 +100,10 @@ await parseSpreadsheet(file,sourceFormat);
       type: file.type,
     },
     sourceFormat,
-    storageKey
+    storageKey,
+     importId: createdImport.id,
+ingestedItemIds: ingestedItems.map((item) => item.id),
+rowCount: ingestedItems.length,
   });
 
 }
