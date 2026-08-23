@@ -192,6 +192,7 @@ import type { ProductClassification } from "@/server/services/product-classifica
 import type { ProposedClassification } from "@/server/services/product-classification/schema";
 import type { ProductEnrichment } from "@/server/services/product-enrichment/schema";
 import type { ProductNormalization } from "@/server/services/product-normalization/schema";
+import { ProductContent } from "../services/product-content/schema";
 
 export const itemClassificationTable = pgTable(
   "item_classification",
@@ -312,6 +313,38 @@ export const itemNormalizationTable = pgTable(
 
     productNormalization: jsonb("product_normalization")
       .$type<ProductNormalization>()
+      .notNull(),
+
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+);
+
+export const itemContentTable = pgTable(
+  "item_content",
+  {
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
+
+    ingestedItemId: uuid("ingested_item_id")
+      .notNull()
+      .references(() => ingestedItemsTable.id, {
+        onDelete: "cascade",
+      })
+      .unique(),
+
+    productContent: jsonb("product_content")
+      .$type<ProductContent>()
       .notNull(),
 
     createdAt: timestamp("created_at", {

@@ -1,5 +1,5 @@
 {
-  "id": "fb2c8a25-c06f-4334-95e7-366b4a724251",
+  "id": "47c70bb1-3138-4c2e-9b0c-8374dc86f7b4",
   "prevId": "6e578a58-3260-4a65-8264-e0ef03521931",
   "version": "7",
   "dialect": "postgresql",
@@ -464,6 +464,74 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.item_content": {
+      "name": "item_content",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ingested_item_id": {
+          "name": "ingested_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_content": {
+          "name": "product_content",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_content_ingested_item_id_ingested_items_id_fk": {
+          "name": "item_content_ingested_item_id_ingested_items_id_fk",
+          "tableFrom": "item_content",
+          "tableTo": "ingested_items",
+          "columnsFrom": [
+            "ingested_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "item_content_ingested_item_id_unique": {
+          "name": "item_content_ingested_item_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ingested_item_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.item_enrichment": {
       "name": "item_enrichment",
       "schema": "",
@@ -587,15 +655,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "item_interpretations_ingested_item_id_unique": {
-          "name": "item_interpretations_ingested_item_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "ingested_item_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

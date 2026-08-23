@@ -1,1 +1,0 @@
-ALTER TABLE "item_interpretations" ADD CONSTRAINT "item_interpretations_ingested_item_id_unique" UNIQUE("ingested_item_id");
