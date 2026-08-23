@@ -13,6 +13,8 @@ import { extractProductAssets } from "@/server/services/product-assets/extract-p
 import { saveItemAssets } from "@/server/db/queries/item-assets";
 import { extractProductEnrichment } from "@/server/services/product-enrichment/extract-product-enrichment";
 import { saveItemEnrichment } from "@/server/db/queries/item-enrichment";
+import { normalizeProduct } from "@/server/services/product-normalization/normalize-product";
+import { saveItemNormalization } from "@/server/db/queries/item-normalization";
 
 export const processIngestedFunction = inngest.createFunction(
   {
@@ -86,6 +88,21 @@ export const processIngestedFunction = inngest.createFunction(
         return saveItemEnrichment({
           ingestedItemId: item.id,
           productEnrichment,
+        });
+      },
+    );
+    const productNormalization = await step.run(
+      "normalize-product",
+      async () => {
+        return normalizeProduct(productEnrichment);
+      },
+    );
+    await step.run(
+      "persist-normalization",
+      async () => {
+        return saveItemNormalization({
+          ingestedItemId: item.id,
+          productNormalization,
         });
       },
     );
