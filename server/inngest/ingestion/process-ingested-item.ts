@@ -4,7 +4,6 @@ import { upsertItemInterpretation } from "@/server/db/queries/item-interpretatio
 import { interpretProduct } from "@/server/services/product-interpretation/product-interpreter";
 import {
   INGESTIIN_ITEM_READY_EVENT,
-  IngestionItemReadyEvent,
   ingestionItemReadyEventSchema,
 } from "@/shared/contracts/ingestion-event";
 import { createClassificationResult } from "@/server/services/product-classification/create-classification-result";
@@ -18,6 +17,7 @@ import { saveItemNormalization } from "@/server/db/queries/item-normalization";
 import { buildProductContentContext } from "@/server/services/product-content/content-context";
 import { generateProductContent } from "@/server/services/product-content/generate-product-content";
 import { saveItemContent } from "@/server/db/queries/item-content";
+import { syncImportCompletion } from "@/server/db/queries/import-progress";
 
 export const processIngestedFunction = inngest.createFunction(
   {
@@ -129,6 +129,9 @@ export const processIngestedFunction = inngest.createFunction(
         });
       },
     );
+    await step.run("sync-import-progress", async () => {
+      return syncImportCompletion(item.importId);
+    });
 
     return { itemId: item.id, interpretationID: persistedInterpretation.id };
   },

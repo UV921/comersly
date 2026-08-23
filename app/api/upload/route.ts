@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { createImport } from "@/server/db/queries/import";
+import { markImportProcessing } from "@/server/db/queries/import-progress";
 import { createIngestedItems } from "@/server/db/queries/ingested-items";
 import { inngest } from "@/server/inngest/client";
 import { uploadFile } from "@/server/services/file-storage";
@@ -78,6 +79,8 @@ export async function POST(request: Request) {
         },
       })),
     );
+
+    await markImportProcessing(createdImport.id);
 
     return Response.json({
       message: "File received successfully",
