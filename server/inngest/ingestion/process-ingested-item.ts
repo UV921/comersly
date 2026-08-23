@@ -9,6 +9,8 @@ import {
 } from "@/shared/contracts/ingestion-event";
 import { createClassificationResult } from "@/server/services/product-classification/create-classification-result";
 import { saveItemClassification } from "@/server/db/queries/item-classification";
+import { extractProductAssets } from "@/server/services/product-assets/extract-product-assets";
+import { saveItemAssets } from "@/server/db/queries/item-assets";
 import { extractProductEnrichment } from "@/server/services/product-enrichment/extract-product-enrichment";
 import { saveItemEnrichment } from "@/server/db/queries/item-enrichment";
 
@@ -53,11 +55,31 @@ export const processIngestedFunction = inngest.createFunction(
         });
       },
     );
-    const productEnrichment=await step.run("enrich-product",
-      async()=>{
-        return extractProductEnrichment(classificationResult.manufacturerEvidence)
-      }
-    )
+    const productAssets = await step.run(
+      "extract-product-assets",
+      async () => {
+        return extractProductAssets(
+          classificationResult.manufacturerEvidence,
+        );
+      },
+    );
+    await step.run(
+      "persist-product-assets",
+      async () => {
+        return saveItemAssets({
+          ingestedItemId: item.id,
+          productAssets,
+        });
+      },
+    );
+    const productEnrichment = await step.run(
+      "enrich-product",
+      async () => {
+        return extractProductEnrichment(
+          classificationResult.manufacturerEvidence,
+        );
+      },
+    );
     await step.run(
       "persist-enrichment",
       async () => {
@@ -67,7 +89,6 @@ export const processIngestedFunction = inngest.createFunction(
         });
       },
     );
-
 
     return { itemId: item.id, interpretationID: persistedInterpretation.id };
   },

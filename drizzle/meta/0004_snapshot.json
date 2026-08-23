@@ -1,6 +1,6 @@
 {
-  "id": "49a16d7f-2fd0-40c2-9376-b56b583c2c23",
-  "prevId": "0a6239c8-baba-4fc7-ab22-b8afe92b70e6",
+  "id": "3b220eae-1b48-4fd4-9960-29afb241a3a2",
+  "prevId": "49a16d7f-2fd0-40c2-9376-b56b583c2c23",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -454,6 +454,74 @@
       "uniqueConstraints": {
         "item_classification_ingested_item_id_unique": {
           "name": "item_classification_ingested_item_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "ingested_item_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.item_enrichment": {
+      "name": "item_enrichment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ingested_item_id": {
+          "name": "ingested_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_enrichment": {
+          "name": "product_enrichment",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "item_enrichment_ingested_item_id_ingested_items_id_fk": {
+          "name": "item_enrichment_ingested_item_id_ingested_items_id_fk",
+          "tableFrom": "item_enrichment",
+          "tableTo": "ingested_items",
+          "columnsFrom": [
+            "ingested_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "item_enrichment_ingested_item_id_unique": {
+          "name": "item_enrichment_ingested_item_id_unique",
           "nullsNotDistinct": false,
           "columns": [
             "ingested_item_id"
