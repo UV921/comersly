@@ -20,6 +20,7 @@ import {
   importStatus,
 } from "@/shared/contracts/ingestion";
 import { InterpretedItem } from "../services/product-interpretation/schema";
+import type { ProductAssets } from "@/server/services/product-assets/schema";
 
 export const sourceFormatEnum = pgEnum("source_format", sourceFormat);
 
@@ -213,6 +214,38 @@ export const itemClassificationTable = pgTable(
 
     proposedClassification: jsonb("proposed_classification")
       .$type<ProposedClassification>()
+      .notNull(),
+
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+);
+
+export const itemAssetsTable = pgTable(
+  "item_assets",
+  {
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
+
+    ingestedItemId: uuid("ingested_item_id")
+      .notNull()
+      .references(() => ingestedItemsTable.id, {
+        onDelete: "cascade",
+      })
+      .unique(),
+
+    productAssets: jsonb("product_assets")
+      .$type<ProductAssets>()
       .notNull(),
 
     createdAt: timestamp("created_at", {
