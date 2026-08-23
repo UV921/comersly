@@ -9,6 +9,8 @@ import {
 } from "@/shared/contracts/ingestion-event";
 import { createClassificationResult } from "@/server/services/product-classification/create-classification-result";
 import { saveItemClassification } from "@/server/db/queries/item-classification";
+import { extractProductEnrichment } from "@/server/services/product-enrichment/extract-product-enrichment";
+import { saveItemEnrichment } from "@/server/db/queries/item-enrichment";
 
 export const processIngestedFunction = inngest.createFunction(
   {
@@ -48,6 +50,20 @@ export const processIngestedFunction = inngest.createFunction(
         return saveItemClassification({
           ingestedItemId: item.id,
           classificationResult,
+        });
+      },
+    );
+    const productEnrichment=await step.run("enrich-product",
+      async()=>{
+        return extractProductEnrichment(classificationResult.manufacturerEvidence)
+      }
+    )
+    await step.run(
+      "persist-enrichment",
+      async () => {
+        return saveItemEnrichment({
+          ingestedItemId: item.id,
+          productEnrichment,
         });
       },
     );
