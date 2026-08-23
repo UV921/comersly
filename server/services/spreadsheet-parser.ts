@@ -1,12 +1,44 @@
 import ExcelJS from "exceljs";
 import { Readable } from "node:stream";
-import readExcelFile from "read-excel-file/node";
 import type {
   SourceFormat,
   SourceRawData,
   SourceMetadata,
   JsonValue,
 } from "@/shared/contracts/ingestion";
+
+type NormalizedRow = {
+  rawData: SourceRawData;
+  sourceMetadata: SourceMetadata;
+};
+
+function unwrapCellValue(value: ExcelJS.CellValue | undefined): unknown {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value !== "object") {
+    return value;
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if ("richText" in value) {
+    return value.richText.map((entry) => entry.text).join("");
+  }
+
+  if ("text" in value && typeof value.text === "string") {
+    return value.text;
+  }
+
+  if ("result" in value) {
+    return value.result ?? null;
+  }
+
+  return value;
+}
 
 function toJsonValue(value: unknown): JsonValue {
   if (value === null || value === undefined) {
@@ -36,134 +68,103 @@ function toJsonValue(value: unknown): JsonValue {
   return String(value);
 }
 
-export async function parseSpreadsheet(
-  file: File,
-  sourceFormat: SourceFormat
-) {
-  const workbook = new ExcelJS.Workbook();
+function isEmptyValue(value: unknown): boolean {
+  return value === null || value === undefined || String(value).trim() === "";
+}
 
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+function getHeaders(worksheet: ExcelJS.Worksheet): string[] {
+  const headerRow = worksheet.getRow(1);
+  const headers: string[] = [];
 
-  // CSV
- // CSV
-if (sourceFormat === "CSV") {
-  const stream = Readable.from(buffer);
-
-  const worksheet = await workbook.csv.read(stream);
-
-  const headerValues = worksheet.getRow(1).values;
-
-  if (!Array.isArray(headerValues)) {
-    throw new Error("CSV has no valid header row");
+  for (let column = 1; column <= headerRow.cellCount; column += 1) {
+    const header = String(
+      unwrapCellValue(headerRow.getCell(column).value) ?? "",
+    ).trim();
+    headers.push(header);
   }
 
-  // ExcelJS row.values is 1-based, so remove first empty position
-  const headers = headerValues
-    .slice(1)
-    .map((header) => String(header));
+  return headers;
+}
 
-const normalizedRows: Array<{
-  rawData: SourceRawData;
-  sourceMetadata: SourceMetadata;
-}> = [];
+function worksheetToRows(
+  worksheet: ExcelJS.Worksheet,
+  fileName: string,
+  sheetName: string | null,
+): NormalizedRow[] {
+  const headers = getHeaders(worksheet);
+
+  if (headers.every((header) => header === "")) {
+    return [];
+  }
+
+  const rows: NormalizedRow[] = [];
 
   worksheet.eachRow((row, rowNumber) => {
-    // Skip header
-    if (rowNumber === 1) return;
+    if (rowNumber === 1) {
+      return;
+    }
 
-    const rowValues = Array.isArray(row.values)
-      ? row.values.slice(1)
-      : [];
-
-    const rawData = Object.fromEntries(
-      headers.map((header, index) => [
-        header,
-toJsonValue(rowValues[index])   ,   ])
+    const rowValues = headers.map((_, index) =>
+      unwrapCellValue(row.getCell(index + 1).value),
     );
 
-    normalizedRows.push({
+    if (rowValues.every(isEmptyValue)) {
+      return;
+    }
+
+    const rawData = Object.fromEntries(
+      headers.flatMap((header, index) =>
+        header ? [[header, toJsonValue(rowValues[index])]] : [],
+      ),
+    );
+
+    rows.push({
       rawData,
       sourceMetadata: {
-        fileName: file.name,
-        sheetName: null,
+        fileName,
+        sheetName,
         rowNumber,
       },
     });
   });
 
-  console.log("Normalized CSV rows:", normalizedRows);
-
-  return normalizedRows;
+  return rows;
 }
 
-// XLSX
-if (sourceFormat === "XLSX") {
-  const sheets = await readExcelFile(buffer);
+async function loadWorksheets(
+  file: File,
+  sourceFormat: SourceFormat,
+): Promise<Array<{ sheetName: string | null; worksheet: ExcelJS.Worksheet }>> {
+  const workbook = new ExcelJS.Workbook();
+  const arrayBuffer = await file.arrayBuffer();
 
-  console.log(
-    "XLSX sheets:",
-    sheets.map((sheet) => sheet.sheet)
-  );
-
-  console.log(
-    "First XLSX row:",
-    sheets[0]?.data[1]
-  );
-const headers = sheets[0]?.data[0];
-const firstDataRow = sheets[0]?.data[1];
-
-if (!headers || !firstDataRow) {
-  throw new Error("Spreadsheet has no data rows");
-}
-
-const rawData = Object.fromEntries(
-  headers.map((header, index) => [
-    String(header),
-    firstDataRow[index] ?? null,
-  ])
-);
-
-console.log("Raw data:", rawData);
-
-//
-if (sourceFormat === "XLSX") {
-  const sheets = await readExcelFile(buffer);
-
-  const firstSheet = sheets[0];
-
-  if (!firstSheet || firstSheet.data.length < 2) {
-    throw new Error("Spreadsheet has no data rows");
+  if (sourceFormat === "CSV") {
+    const worksheet = await workbook.csv.read(
+      Readable.from(new Uint8Array(arrayBuffer)),
+    );
+    return [{ sheetName: null, worksheet }];
   }
 
-  const headers = firstSheet.data[0].map((header) =>
-    String(header)
-  );
+  await workbook.xlsx.load(arrayBuffer);
 
-  const normalizedRows = firstSheet.data
-    .slice(1)
-    .map((row, index) => {
-      const rawData = Object.fromEntries(
-        headers.map((header, columnIndex) => [
-          header,
-          row[columnIndex] ?? null,
-        ])
-      );
+  return workbook.worksheets.map((worksheet) => ({
+    sheetName: worksheet.name,
+    worksheet,
+  }));
+}
 
-      return {
-        rawData,
-        sourceMetadata: {
-          fileName: file.name,
-          sheetName: firstSheet.sheet,
-          rowNumber: index + 2,
-        },
-      };
-    });
+export async function parseSpreadsheet(
+  file: File,
+  sourceFormat: SourceFormat,
+): Promise<NormalizedRow[]> {
+  const sheets = await loadWorksheets(file, sourceFormat);
+  const normalizedRows: NormalizedRow[] = [];
 
-  console.log("Normalized XLSX rows:", normalizedRows);
+  for (const { sheetName, worksheet } of sheets) {
+    normalizedRows.push(
+      ...worksheetToRows(worksheet, file.name, sheetName),
+    );
+  }
 
   return normalizedRows;
 }
-
-  return sheets;
-}}

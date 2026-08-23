@@ -8,6 +8,7 @@ type CreateImportInput = {
   fileName: string;
   sourceFormat: SourceFormat;
   storageKey: string;
+  totalRows?: number;
 };
 
 export async function createImport({
@@ -15,6 +16,7 @@ export async function createImport({
   fileName,
   sourceFormat,
   storageKey,
+  totalRows = 0,
 }: CreateImportInput) {
   const [createdImport] = await db
     .insert(importsTable)
@@ -23,8 +25,13 @@ export async function createImport({
       fileName,
       sourceFormat,
       storageKey,
+      totalRows,
     })
     .returning();
+
+  if (!createdImport) {
+    throw new Error("Failed to create import");
+  }
 
   return createdImport;
 }

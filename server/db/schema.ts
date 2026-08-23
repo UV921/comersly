@@ -170,7 +170,8 @@ export const itemInterpretation = pgTable("item_interpretations", {
     .references(() => ingestedItemsTable.id, {
       onDelete: "cascade",
     })
-    .notNull().unique(),
+    .notNull()
+    .unique(),
   result: jsonb("result").$type<InterpretedItem>().notNull(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
