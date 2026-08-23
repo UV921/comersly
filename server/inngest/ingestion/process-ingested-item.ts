@@ -9,6 +9,8 @@ import {
 } from "@/shared/contracts/ingestion-event";
 import { createClassificationResult } from "@/server/services/product-classification/create-classification-result";
 import { saveItemClassification } from "@/server/db/queries/item-classification";
+import { extractProductAssets } from "@/server/services/product-assets/extract-product-assets";
+import { saveItemAssets } from "@/server/db/queries/item-assets";
 
 export const processIngestedFunction = inngest.createFunction(
   {
@@ -48,6 +50,23 @@ export const processIngestedFunction = inngest.createFunction(
         return saveItemClassification({
           ingestedItemId: item.id,
           classificationResult,
+        });
+      },
+    );
+    const productAssets = await step.run(
+      "extract-product-assets",
+      async () => {
+        return extractProductAssets(
+          classificationResult.manufacturerEvidence,
+        );
+      },
+    );
+    await step.run(
+      "persist-product-assets",
+      async () => {
+        return saveItemAssets({
+          ingestedItemId: item.id,
+          productAssets,
         });
       },
     );
