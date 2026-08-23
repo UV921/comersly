@@ -139,8 +139,10 @@ async function loadWorksheets(
   const arrayBuffer = await file.arrayBuffer();
 
   if (sourceFormat === "CSV") {
+    // Readable.from(typedArray) emits one number per byte. Wrap the Buffer
+    // so ExcelJS receives a single binary chunk.
     const worksheet = await workbook.csv.read(
-      Readable.from(new Uint8Array(arrayBuffer)),
+      Readable.from([Buffer.from(arrayBuffer)]),
     );
     return [{ sheetName: null, worksheet }];
   }
