@@ -191,7 +191,7 @@ import type { ManufacturerClassificationEvidence } from "@/server/services/produ
 import type { ProductClassification } from "@/server/services/product-classification/schema";
 import type { ProposedClassification } from "@/server/services/product-classification/schema";
 import type { ProductEnrichment } from "@/server/services/product-enrichment/schema";
-import { ProductNormalization } from "../services/product-normalization/schema";
+import type { ProductNormalization } from "@/server/services/product-normalization/schema";
 
 export const itemClassificationTable = pgTable(
   "item_classification",
