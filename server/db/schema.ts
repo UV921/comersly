@@ -190,6 +190,7 @@ export const itemInterpretation = pgTable("item_interpretations", {
 import type { ManufacturerClassificationEvidence } from "@/server/services/product-classification/manufacturer-evidence";
 import type { ProductClassification } from "@/server/services/product-classification/schema";
 import type { ProposedClassification } from "@/server/services/product-classification/schema";
+import type { ProductEnrichment } from "@/server/services/product-enrichment/schema";
 
 export const itemClassificationTable = pgTable(
   "item_classification",
@@ -246,6 +247,38 @@ export const itemAssetsTable = pgTable(
 
     productAssets: jsonb("product_assets")
       .$type<ProductAssets>()
+      .notNull(),
+
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+);
+
+export const itemEnrichmentTable = pgTable(
+  "item_enrichment",
+  {
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
+
+    ingestedItemId: uuid("ingested_item_id")
+      .notNull()
+      .references(() => ingestedItemsTable.id, {
+        onDelete: "cascade",
+      })
+      .unique(),
+
+    productEnrichment: jsonb("product_enrichment")
+      .$type<ProductEnrichment>()
       .notNull(),
 
     createdAt: timestamp("created_at", {
