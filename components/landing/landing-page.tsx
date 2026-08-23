@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -44,6 +44,17 @@ function PrimaryCta({
   );
 }
 
+function AuthActions({
+  signedOut,
+  signedIn,
+}: {
+  signedOut: React.ReactNode;
+  signedIn: React.ReactNode;
+}) {
+  const { isSignedIn } = useAuth();
+  return <>{isSignedIn ? signedIn : signedOut}</>;
+}
+
 function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -75,15 +86,17 @@ function SiteHeader() {
         </nav>
         <div className="hidden items-center gap-3 md:flex">
           <ThemeToggle compact />
-          <SignedOut>
-            <Link href="/sign-in" className="text-sm text-muted hover:text-foreground">
-              Log in
-            </Link>
-            <PrimaryCta href="/sign-up">Start free trial</PrimaryCta>
-          </SignedOut>
-          <SignedIn>
-            <PrimaryCta href="/dashboard">Open workspace</PrimaryCta>
-          </SignedIn>
+          <AuthActions
+            signedOut={
+              <>
+                <Link href="/sign-in" className="text-sm text-muted hover:text-foreground">
+                  Log in
+                </Link>
+                <PrimaryCta href="/sign-up">Start free trial</PrimaryCta>
+              </>
+            }
+            signedIn={<PrimaryCta href="/dashboard">Open workspace</PrimaryCta>}
+          />
         </div>
         <button
           type="button"
@@ -107,17 +120,17 @@ function SiteHeader() {
             </a>
           ))}
           <ThemeToggle />
-          <SignedOut>
-            <div className="flex items-center gap-3">
-              <Link href="/sign-in" className="text-sm">
-                Log in
-              </Link>
-              <PrimaryCta href="/sign-up">Start free trial</PrimaryCta>
-            </div>
-          </SignedOut>
-          <SignedIn>
-            <PrimaryCta href="/dashboard">Open workspace</PrimaryCta>
-          </SignedIn>
+          <AuthActions
+            signedOut={
+              <div className="flex items-center gap-3">
+                <Link href="/sign-in" className="text-sm">
+                  Log in
+                </Link>
+                <PrimaryCta href="/sign-up">Start free trial</PrimaryCta>
+              </div>
+            }
+            signedIn={<PrimaryCta href="/dashboard">Open workspace</PrimaryCta>}
+          />
         </div>
       ) : null}
     </header>
@@ -147,12 +160,10 @@ function Hero() {
           copy, and exports a delivery-ready file.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3">
-          <SignedOut>
-            <PrimaryCta href="/sign-up">Get started for free →</PrimaryCta>
-          </SignedOut>
-          <SignedIn>
-            <PrimaryCta href="/dashboard">Continue to workspace →</PrimaryCta>
-          </SignedIn>
+          <AuthActions
+            signedOut={<PrimaryCta href="/sign-up">Get started for free →</PrimaryCta>}
+            signedIn={<PrimaryCta href="/dashboard">Continue to workspace →</PrimaryCta>}
+          />
           <p className="text-xs text-muted">
             No credit card required · CSV and XLSX · Cancel anytime
           </p>
