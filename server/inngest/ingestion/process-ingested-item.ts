@@ -15,6 +15,9 @@ import { extractProductEnrichment } from "@/server/services/product-enrichment/e
 import { saveItemEnrichment } from "@/server/db/queries/item-enrichment";
 import { normalizeProduct } from "@/server/services/product-normalization/normalize-product";
 import { saveItemNormalization } from "@/server/db/queries/item-normalization";
+import { buildProductContentContext } from "@/server/services/product-content/content-context";
+import { generateProductContent } from "@/server/services/product-content/generate-product-content";
+import { saveItemContent } from "@/server/db/queries/item-content";
 
 export const processIngestedFunction = inngest.createFunction(
   {
@@ -103,6 +106,26 @@ export const processIngestedFunction = inngest.createFunction(
         return saveItemNormalization({
           ingestedItemId: item.id,
           productNormalization,
+        });
+      },
+    );
+    const productContent = await step.run(
+      "generate-product-content",
+      async () => {
+        const contentContext = buildProductContentContext(
+          classificationResult.manufacturerEvidence,
+          productNormalization,
+        );
+    
+        return generateProductContent(contentContext);
+      },
+    );
+    await step.run(
+      "persist-product-content",
+      async () => {
+        return saveItemContent({
+          ingestedItemId: item.id,
+          productContent,
         });
       },
     );

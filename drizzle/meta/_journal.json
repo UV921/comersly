@@ -43,6 +43,13 @@
       "when": 1787498736955,
       "tag": "0005_late_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787500897226,
+      "tag": "0006_outstanding_namor",
+      "breakpoints": true
     }
   ]
 }
