@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import  {parseSpreadsheet}  from "@/server/services/spreadsheet-parser";
 
 export async function POST(request: Request) {
   const { isAuthenticated, userId } = await auth();
@@ -14,6 +15,7 @@ export async function POST(request: Request) {
 
   const file = data.get("file");
 
+
   if (!file || typeof file === "string") {
     return Response.json(
       { error: "File not received" },
@@ -21,6 +23,7 @@ export async function POST(request: Request) {
     );
   }
 
+  
   console.log("Received file:", {
     name: file.name,
     size: file.size,
@@ -54,7 +57,7 @@ const sourceFormat = fileName.endsWith(".csv")
   ? "CSV"
   : "XLSX";
 
-
+await parseSpreadsheet(file,sourceFormat);
   return Response.json({
     message: "File received successfully",
     userId,
