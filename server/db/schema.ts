@@ -184,3 +184,47 @@ export const itemInterpretation = pgTable("item_interpretations", {
     .defaultNow()
     .notNull(),
 });
+
+
+import type { ManufacturerClassificationEvidence } from "@/server/services/product-classification/manufacturer-evidence";
+import type { ProductClassification } from "@/server/services/product-classification/schema";
+import type { ProposedClassification } from "@/server/services/product-classification/schema";
+
+export const itemClassificationTable = pgTable(
+  "item_classification",
+  {
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
+
+    ingestedItemId: uuid("ingested_item_id")
+      .notNull()
+      .references(() => ingestedItemsTable.id, {
+        onDelete: "cascade",
+      })
+      .unique(),
+
+    manufacturerEvidence: jsonb("manufacturer_evidence")
+      .$type<ManufacturerClassificationEvidence>(),
+
+    verifiedClassification: jsonb("verified_classification")
+      .$type<ProductClassification>()
+      .notNull(),
+
+    proposedClassification: jsonb("proposed_classification")
+      .$type<ProposedClassification>()
+      .notNull(),
+
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+);

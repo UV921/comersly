@@ -7,6 +7,8 @@ import {
   IngestionItemReadyEvent,
   ingestionItemReadyEventSchema,
 } from "@/shared/contracts/ingestion-event";
+import { createClassificationResult } from "@/server/services/product-classification/create-classification-result";
+import { saveItemClassification } from "@/server/db/queries/item-classification";
 
 export const processIngestedFunction = inngest.createFunction(
   {
@@ -25,12 +27,32 @@ export const processIngestedFunction = inngest.createFunction(
     const interpretation = await step.run("interpret-product", async () => {
       return interpretProduct(item.rawData);
     });
-    const persistedInterpretation=await step.run("persist-interpretation",async ()=>{
-      return upsertItemInterpretation(item.id,interpretation)
+    const persistedInterpretation = await step.run(
+      "persist-interpretation",
+      async () => {
+        return upsertItemInterpretation(item.id, interpretation);
+      },
+    );
+    const classificationResult = await step.run(
+      "classify-product",
+      async () => {
+        return createClassificationResult({
+          rawData: item.rawData,
+          interpretation,
+        });
+      },
+    );
+    await step.run(
+      "persist-classification",
+      async () => {
+        return saveItemClassification({
+          ingestedItemId: item.id,
+          classificationResult,
+        });
+      },
+    );
 
 
-    })
-
-    return { itemId: item.id, interpretationID:persistedInterpretation.id };
+    return { itemId: item.id, interpretationID: persistedInterpretation.id };
   },
 );
