@@ -12,7 +12,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-border bg-surface">
+    <section className="surface-card">
       <div className="border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">{title}</h2>
       </div>

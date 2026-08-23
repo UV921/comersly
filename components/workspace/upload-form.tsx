@@ -120,7 +120,7 @@ export function UploadForm() {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          "rounded-lg border border-dashed bg-surface px-6 py-10 text-center",
+          "rounded-2xl border border-dashed bg-surface px-6 py-12 text-center shadow-[var(--card-shadow)]",
           isDragging ? "border-accent bg-accent-soft" : "border-border",
         )}
       >
@@ -128,7 +128,7 @@ export function UploadForm() {
         <p className="mt-1 text-sm text-muted">or</p>
         <button
           type="button"
-          className="mt-3 inline-flex h-9 items-center rounded-md border border-border px-3 text-sm font-medium hover:bg-surface-muted"
+          className="mt-3 inline-flex h-10 items-center rounded-full border border-border px-4 text-sm font-medium hover:bg-surface-muted"
           onClick={() => inputRef.current?.click()}
         >
           Browse files
@@ -143,7 +143,7 @@ export function UploadForm() {
       </div>
 
       {selectedFile ? (
-        <div className="flex items-start justify-between rounded-lg border border-border bg-surface px-4 py-3">
+        <div className="flex items-start justify-between rounded-2xl border border-border bg-surface px-4 py-3 shadow-[var(--card-shadow)]">
           <div>
             <p className="text-sm font-medium">{selectedFile.name}</p>
             <p className="text-xs text-muted">
@@ -171,7 +171,7 @@ export function UploadForm() {
         type="button"
         onClick={handleUpload}
         disabled={isUploading || !selectedFile}
-        className="inline-flex h-9 items-center rounded-md bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-10 items-center rounded-full bg-ink px-4 text-sm font-medium text-ink-fg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isUploading ? "Starting..." : "Start Processing"}
       </button>

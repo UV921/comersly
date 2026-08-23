@@ -1,7 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { EmptyState } from "@/components/workspace/empty-state";
+import { Greeting } from "@/components/workspace/greeting";
 import { ImportTable } from "@/components/workspace/import-table";
 import { MetricCards } from "@/components/workspace/metric-cards";
 import { PageHeader } from "@/components/workspace/page-header";
@@ -18,13 +19,15 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const [metrics, imports] = await Promise.all([
+  const [metrics, imports, user] = await Promise.all([
     getDashboardMetrics(userId),
     listImportsForWorkspace(userId),
+    currentUser(),
   ]);
 
   return (
     <>
+      <Greeting name={user?.firstName} />
       <PageHeader
         title="Dashboard"
         description="Track product spreadsheet imports as Comersly identifies, verifies, and enriches each row."
@@ -34,7 +37,7 @@ export default async function DashboardPage() {
       <MetricCards metrics={metrics} />
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold">Recent imports</h2>
+        <h2 className="mb-3 font-serif text-2xl tracking-tight">Recent imports</h2>
         {imports.length === 0 ? (
           <EmptyState
             title="No imports yet"

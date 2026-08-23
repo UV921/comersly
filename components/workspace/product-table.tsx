@@ -70,14 +70,14 @@ export function ProductTable({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search part number, description, brand..."
-          className="h-9 w-full rounded-md border border-border bg-surface px-3 text-sm sm:max-w-sm"
+          className="h-10 w-full rounded-full border border-border bg-surface px-4 text-sm sm:max-w-sm"
         />
         <select
           value={status}
           onChange={(event) =>
             setStatus(event.target.value as "all" | "ready" | "processing")
           }
-          className="h-9 rounded-md border border-border bg-surface px-2 text-sm"
+          className="h-10 rounded-full border border-border bg-surface px-3 text-sm"
           aria-label="Filter by status"
         >
           <option value="all">All statuses</option>
@@ -87,7 +87,7 @@ export function ProductTable({
         <select
           value={review}
           onChange={(event) => setReview(event.target.value as "all" | "review")}
-          className="h-9 rounded-md border border-border bg-surface px-2 text-sm"
+          className="h-10 rounded-full border border-border bg-surface px-3 text-sm"
           aria-label="Filter by review"
         >
           <option value="all">All review states</option>
@@ -96,11 +96,11 @@ export function ProductTable({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface px-6 py-10 text-center text-sm text-muted">
+        <div className="surface-card border-dashed px-6 py-10 text-center text-sm text-muted">
           No products match your filters
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="surface-card overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-border bg-surface-muted text-xs font-medium uppercase tracking-wide text-muted">
               <tr>

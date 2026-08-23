@@ -7,11 +7,11 @@ export default function Loading() {
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
-            className="h-20 animate-pulse rounded-lg border border-border bg-surface"
+            className="h-20 animate-pulse rounded-2xl border border-border bg-surface"
           />
         ))}
       </div>
-      <div className="h-64 animate-pulse rounded-lg border border-border bg-surface" />
+      <div className="h-64 animate-pulse rounded-2xl border border-border bg-surface" />
     </div>
   );
 }
