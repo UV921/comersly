@@ -43,7 +43,11 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useSyncExternalStore(subscribeToTheme, readTheme, () => "light");
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    readTheme,
+    (): Theme => "light",
+  );
 
   const setTheme = useCallback((next: Theme) => {
     applyTheme(next);
