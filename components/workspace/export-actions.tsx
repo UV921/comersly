@@ -1,14 +1,22 @@
-import { isImportExportable } from "@/server/services/product-delivery/export-readiness";
+import { canDownloadDelivery } from "@/server/services/product-delivery/export-readiness";
 import type { ImportStatus } from "@/shared/contracts/ingestion";
 
 export function ExportActions({
   importId,
   status,
+  readyCount,
+  totalCount,
 }: {
   importId: string;
   status: ImportStatus;
+  readyCount: number;
+  totalCount: number;
 }) {
-  const ready = isImportExportable(status);
+  const ready = canDownloadDelivery({
+    status,
+    readyCount,
+    totalCount,
+  });
 
   if (!ready) {
     return (
@@ -22,13 +30,13 @@ export function ExportActions({
     <div className="flex flex-wrap items-center gap-2">
       <a
         href={`/api/imports/${importId}/delivery?format=csv`}
-        className="inline-flex h-10 items-center rounded-full bg-ink px-4 text-sm font-medium text-ink-fg hover:opacity-90"
+        className="inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover"
       >
         Download CSV
       </a>
       <a
         href={`/api/imports/${importId}/delivery?format=xlsx`}
-        className="inline-flex h-10 items-center rounded-full border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted"
+        className="inline-flex h-10 items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted"
       >
         Download XLSX
       </a>

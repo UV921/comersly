@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Fraunces, Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono, Instrument_Serif, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 
+import { ComerslyClerkProvider } from "@/components/auth/comersly-clerk-provider";
 import { ThemeProvider } from "@/components/theme/theme-provider";
-
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans-family",
   subsets: ["latin"],
 });
 
@@ -17,22 +16,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-display-family",
   subsets: ["latin"],
-  display: "swap",
+  weight: "400",
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-workspace-family",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Comersly — Industrial product intelligence",
-    template: "%s · Comersly",
+  title: "Comersly",
+  description: "Industrial product intelligence workspace",
+  icons: {
+    icon: "/comersly-mark.svg",
   },
-  description:
-    "Turn messy industrial spreadsheets into verified catalog records: manufacturer evidence, classification, enrichment, content, and a 252-column delivery export.",
 };
-
-const THEME_BOOT = `(function(){try{var t=localStorage.getItem("comersly-theme");if(t!=="light"&&t!=="dark"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme="light"}})();`;
 
 export default function RootLayout({
   children,
@@ -43,23 +45,19 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} ${instrumentSerif.variable} ${plusJakarta.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">
+      <body className="min-h-full bg-canvas text-foreground">
         <Script
-          id="comersly-theme-boot"
+          id="comersly-theme"
           strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: THEME_BOOT }}
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("comersly-theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme="light"}})();`,
+          }}
         />
-        <ClerkProvider
-          signInUrl="/sign-in"
-          signUpUrl="/sign-up"
-          afterSignOutUrl="/"
-          signInFallbackRedirectUrl="/dashboard"
-          signUpFallbackRedirectUrl="/dashboard"
-        >
-          <ThemeProvider>{children}</ThemeProvider>
-        </ClerkProvider>
+        <ThemeProvider>
+          <ComerslyClerkProvider>{children}</ComerslyClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

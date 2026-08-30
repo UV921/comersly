@@ -111,7 +111,7 @@ export function UploadForm() {
     : null;
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
+    <div className="max-w-xl space-y-4">
       <div
         onDragOver={(event) => {
           event.preventDefault();
@@ -120,15 +120,18 @@ export function UploadForm() {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          "rounded-2xl border border-dashed bg-surface px-6 py-12 text-center shadow-[var(--card-shadow)]",
-          isDragging ? "border-accent bg-accent-soft" : "border-border",
+          "rounded-2xl border border-dashed px-6 py-14 text-center transition",
+          isDragging
+            ? "border-accent bg-accent-soft"
+            : "border-border bg-surface",
         )}
       >
-        <p className="text-sm font-medium">Drop CSV or XLSX here</p>
-        <p className="mt-1 text-sm text-muted">or</p>
+        <p className="text-sm font-medium text-accent">Spreadsheet</p>
+        <p className="mt-3 text-lg font-semibold tracking-tight">Drop CSV or XLSX here</p>
+        <p className="mt-1 text-sm text-muted">One product per row, up to 10MB</p>
         <button
           type="button"
-          className="mt-3 inline-flex h-10 items-center rounded-full border border-border px-4 text-sm font-medium hover:bg-surface-muted"
+          className="mt-6 inline-flex h-10 items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted"
           onClick={() => inputRef.current?.click()}
         >
           Browse files
@@ -143,7 +146,7 @@ export function UploadForm() {
       </div>
 
       {selectedFile ? (
-        <div className="flex items-start justify-between rounded-2xl border border-border bg-surface px-4 py-3 shadow-[var(--card-shadow)]">
+        <div className="flex items-start justify-between rounded-2xl border border-border bg-surface px-5 py-4">
           <div>
             <p className="text-sm font-medium">{selectedFile.name}</p>
             <p className="text-xs text-muted">
@@ -171,7 +174,7 @@ export function UploadForm() {
         type="button"
         onClick={handleUpload}
         disabled={isUploading || !selectedFile}
-        className="inline-flex h-10 items-center rounded-full bg-ink px-4 text-sm font-medium text-ink-fg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isUploading ? "Starting..." : "Start Processing"}
       </button>

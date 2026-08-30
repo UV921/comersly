@@ -3,22 +3,143 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { ProductImage } from "@/components/workspace/product-image";
+import { cn } from "@/lib/cn";
 import type { ProductRow } from "@/server/db/queries/workspace";
 
-import {
-  ConfidenceBadge,
-  NeedsReviewBadge,
-  ProductStateBadge,
-} from "./status-badge";
+function productName(product: ProductRow) {
+  return (
+    product.productName ??
+    product.rawDescription ??
+    product.rawMpn ??
+    "Untitled product"
+  );
+}
 
-export function ProductTable({
+export function ProductStrip({
+  products,
+  interactive = true,
+}: {
+  products: ProductRow[];
+  interactive?: boolean;
+}) {
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {products.slice(0, 8).map((product) => {
+        const name = productName(product);
+        const body = (
+          <>
+            <div className="aspect-square overflow-hidden rounded-2xl bg-surface-muted">
+              <ProductImage
+                src={product.imageUrl}
+                alt={name}
+                className="h-full w-full"
+                imgClassName="object-contain p-3"
+              />
+            </div>
+            <p className="mt-3 truncate text-sm font-medium">{name}</p>
+            <p className="truncate text-xs text-muted">
+              {product.brand ?? product.rawMpn ?? "In pipeline"}
+            </p>
+          </>
+        );
+
+        return (
+          <li key={product.id}>
+            {interactive ? (
+              <Link href={`/products/${product.id}`} className="block rounded-[22px] bg-surface p-3">
+                {body}
+              </Link>
+            ) : (
+              <div className="rounded-[22px] bg-surface p-3">{body}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+export function ProductGrid({
   products,
   showImport = false,
 }: {
   products: ProductRow[];
   showImport?: boolean;
 }) {
-  const [query, setQuery] = useState("");
+  if (products.length === 0) {
+    return (
+      <p className="py-10 text-sm text-muted">No products match these filters.</p>
+    );
+  }
+
+  return (
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
+      {products.map((product) => {
+        const name = productName(product);
+
+        return (
+          <li key={product.id}>
+            <Link href={`/products/${product.id}`} className="group block">
+              <div className="aspect-square overflow-hidden rounded-2xl bg-surface">
+                <ProductImage
+                  src={product.imageUrl}
+                  alt={name}
+                  className="h-full w-full bg-surface"
+                  imgClassName="object-contain p-5 transition duration-300 group-hover:scale-[1.03]"
+                />
+              </div>
+              <p className="mt-3 truncate text-sm font-medium">{name}</p>
+              <p className="truncate text-xs text-muted">
+                {[product.brand, product.rawMpn, showImport ? product.importFileName : null]
+                  .filter(Boolean)
+                  .join(" · ") || "Awaiting verification"}
+              </p>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "h-9 rounded-xl px-3 text-sm transition",
+        active
+          ? "bg-accent text-white"
+          : "border border-border bg-surface text-muted hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function ProductTable({
+  products,
+  showImport = false,
+  initialQuery = "",
+  showFilters = true,
+}: {
+  products: ProductRow[];
+  showImport?: boolean;
+  initialQuery?: string;
+  showFilters?: boolean;
+}) {
+  const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState<"all" | "ready" | "processing">("all");
   const [review, setReview] = useState<"all" | "review">("all");
 
@@ -60,109 +181,43 @@ export function ProductTable({
   }, [products, query, review, status]);
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <label className="sr-only" htmlFor="product-search">
-          Search products
-        </label>
-        <input
-          id="product-search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search part number, description, brand..."
-          className="h-10 w-full rounded-full border border-border bg-surface px-4 text-sm sm:max-w-sm"
-        />
-        <select
-          value={status}
-          onChange={(event) =>
-            setStatus(event.target.value as "all" | "ready" | "processing")
-          }
-          className="h-10 rounded-full border border-border bg-surface px-3 text-sm"
-          aria-label="Filter by status"
-        >
-          <option value="all">All statuses</option>
-          <option value="ready">Ready</option>
-          <option value="processing">Processing</option>
-        </select>
-        <select
-          value={review}
-          onChange={(event) => setReview(event.target.value as "all" | "review")}
-          className="h-10 rounded-full border border-border bg-surface px-3 text-sm"
-          aria-label="Filter by review"
-        >
-          <option value="all">All review states</option>
-          <option value="review">Needs review</option>
-        </select>
-      </div>
+    <div>
+      {showFilters ? (
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <input
+            id="product-search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Filter by name, brand, or part number"
+            className="h-10 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none placeholder:text-muted focus:border-accent sm:max-w-sm"
+          />
+          <div className="flex flex-wrap gap-2">
+            <FilterChip active={status === "all"} onClick={() => setStatus("all")}>
+              All
+            </FilterChip>
+            <FilterChip
+              active={status === "ready"}
+              onClick={() => setStatus("ready")}
+            >
+              Ready
+            </FilterChip>
+            <FilterChip
+              active={status === "processing"}
+              onClick={() => setStatus("processing")}
+            >
+              In progress
+            </FilterChip>
+            <FilterChip
+              active={review === "review"}
+              onClick={() => setReview(review === "review" ? "all" : "review")}
+            >
+              Needs review
+            </FilterChip>
+          </div>
+        </div>
+      ) : null}
 
-      {filtered.length === 0 ? (
-        <div className="surface-card border-dashed px-6 py-10 text-center text-sm text-muted">
-          No products match your filters
-        </div>
-      ) : (
-        <div className="surface-card overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-border bg-surface-muted text-xs font-medium uppercase tracking-wide text-muted">
-              <tr>
-                <th className="px-4 py-2.5 font-medium">Manufacturer part #</th>
-                <th className="px-4 py-2.5 font-medium">Original description</th>
-                <th className="px-4 py-2.5 font-medium">Brand</th>
-                <th className="px-4 py-2.5 font-medium">Manufacturer</th>
-                <th className="px-4 py-2.5 font-medium">Product type</th>
-                <th className="px-4 py-2.5 font-medium">Classification</th>
-                <th className="px-4 py-2.5 font-medium">Confidence</th>
-                <th className="px-4 py-2.5 font-medium">Status</th>
-                <th className="px-4 py-2.5 font-medium">Review</th>
-                {showImport ? (
-                  <th className="px-4 py-2.5 font-medium">Import</th>
-                ) : null}
-                <th className="px-4 py-2.5 font-medium">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((product) => (
-                <tr
-                  key={product.id}
-                  className="border-b border-border last:border-0 hover:bg-surface-muted/60"
-                >
-                  <td className="px-4 py-3 font-medium">
-                    {product.rawMpn ?? "—"}
-                  </td>
-                  <td className="max-w-xs truncate px-4 py-3 text-muted">
-                    {product.rawDescription ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">{product.brand ?? "—"}</td>
-                  <td className="px-4 py-3">{product.manufacturer ?? "—"}</td>
-                  <td className="px-4 py-3">{product.productType ?? "—"}</td>
-                  <td className="max-w-xs truncate px-4 py-3 text-muted">
-                    {product.proposedClasspath ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <ConfidenceBadge confidence={product.confidence} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <ProductStateBadge isReady={product.isReady} />
-                  </td>
-                  <td className="px-4 py-3">
-                    {product.needsReview ? <NeedsReviewBadge /> : "—"}
-                  </td>
-                  {showImport ? (
-                    <td className="px-4 py-3 text-muted">{product.importFileName}</td>
-                  ) : null}
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="font-medium text-accent hover:underline"
-                    >
-                      View product
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <ProductGrid products={filtered} showImport={showImport} />
     </div>
   );
 }

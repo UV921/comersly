@@ -71,6 +71,8 @@ export async function POST(request: Request) {
       rows: normalizedRows,
     });
 
+    await markImportProcessing(createdImport.id);
+
     await inngest.send(
       ingestedItems.map((item) => ({
         name: INGESTIIN_ITEM_READY_EVENT,
@@ -79,8 +81,6 @@ export async function POST(request: Request) {
         },
       })),
     );
-
-    await markImportProcessing(createdImport.id);
 
     return Response.json({
       message: "File received successfully",

@@ -1,15 +1,21 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AutoRefresh } from "@/components/workspace/auto-refresh";
+import { DashboardCharts } from "@/components/workspace/dashboard-charts";
 import { EmptyState } from "@/components/workspace/empty-state";
-import { Greeting } from "@/components/workspace/greeting";
 import { ImportTable } from "@/components/workspace/import-table";
 import { MetricCards } from "@/components/workspace/metric-cards";
 import { PageHeader } from "@/components/workspace/page-header";
 import { PrimaryLink } from "@/components/workspace/buttons";
+import { ProductStrip } from "@/components/workspace/product-table";
+import { formatDate } from "@/lib/product-display";
 import {
   getDashboardMetrics,
+  getWorkspacePipelineCounts,
   listImportsForWorkspace,
+  listProductsForUser,
 } from "@/server/db/queries/workspace";
 
 export default async function DashboardPage() {
@@ -19,36 +25,59 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const [metrics, imports, user] = await Promise.all([
+  const [user, metrics, imports, products, pipeline] = await Promise.all([
+    currentUser(),
     getDashboardMetrics(userId),
     listImportsForWorkspace(userId),
-    currentUser(),
+    listProductsForUser(userId, { limit: 8 }),
+    getWorkspacePipelineCounts(userId),
   ]);
+
+  const greeting = user?.firstName
+    ? `Welcome back, ${user.firstName}`
+    : "Welcome back";
+  const holderName = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
 
   return (
     <>
-      <Greeting name={user?.firstName} />
+      <AutoRefresh active={metrics.processingImports > 0} />
       <PageHeader
         title="Dashboard"
-        description="Track product spreadsheet imports as Comersly identifies, verifies, and enriches each row."
-        actions={<PrimaryLink href="/upload">Upload Products</PrimaryLink>}
+        description={`${greeting} · ${formatDate(new Date())}`}
+        actions={<PrimaryLink href="/upload">Upload</PrimaryLink>}
       />
 
-      <MetricCards metrics={metrics} />
+      <MetricCards metrics={metrics} holderName={holderName} />
 
-      <section className="mt-8">
-        <h2 className="mb-3 font-serif text-2xl tracking-tight">Recent imports</h2>
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(17rem,0.8fr)]">
         {imports.length === 0 ? (
           <EmptyState
             title="No imports yet"
-            description="Upload your first product spreadsheet to start enrichment."
+            description="Upload a CSV or XLSX. Each row becomes a product in the catalog."
             actionHref="/upload"
-            actionLabel="Upload your first product spreadsheet"
+            actionLabel="Upload a spreadsheet"
           />
         ) : (
-          <ImportTable imports={imports.slice(0, 8)} />
+          <ImportTable
+            title="Recent imports"
+            imports={imports.slice(0, 8)}
+            framed={false}
+          />
         )}
-      </section>
+        <DashboardCharts imports={imports} pipeline={pipeline} />
+      </div>
+
+      {products.length > 0 ? (
+        <section className="mt-8">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-[15px] tracking-tight">Recent products</h2>
+            <Link href="/products" className="text-sm text-muted hover:text-foreground">
+              Catalog
+            </Link>
+          </div>
+          <ProductStrip products={products} />
+        </section>
+      ) : null}
     </>
   );
 }

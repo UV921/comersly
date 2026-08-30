@@ -1,19 +1,11 @@
 import { cn } from "@/lib/cn";
 import type { ImportStatus } from "@/shared/contracts/ingestion";
 
-const IMPORT_STYLES: Record<ImportStatus, string> = {
-  PENDING: "bg-[var(--badge-neutral-bg)] text-pending",
-  PROCESSING: "bg-[var(--badge-warning-bg)] text-processing",
-  COMPLETED: "bg-[var(--badge-success-bg)] text-completed",
-  PARTIALLY_COMPLETED: "bg-[var(--badge-success-bg)] text-completed",
-  FAILED: "bg-[var(--badge-danger-bg)] text-failed",
-};
-
 const IMPORT_LABELS: Record<ImportStatus, string> = {
   PENDING: "Pending",
-  PROCESSING: "Processing",
-  COMPLETED: "Completed",
-  PARTIALLY_COMPLETED: "Partially completed",
+  PROCESSING: "Ongoing",
+  COMPLETED: "Done",
+  PARTIALLY_COMPLETED: "Partial",
   FAILED: "Failed",
 };
 
@@ -21,8 +13,12 @@ export function ImportStatusBadge({ status }: { status: ImportStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        IMPORT_STYLES[status],
+        "inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium",
+        status === "COMPLETED" && "bg-accent-soft text-accent",
+        status === "FAILED" && "bg-failed/10 text-failed",
+        status === "PROCESSING" && "bg-processing/15 text-accent",
+        (status === "PENDING" || status === "PARTIALLY_COMPLETED") &&
+          "bg-surface-muted text-muted",
       )}
     >
       {IMPORT_LABELS[status]}
@@ -32,23 +28,25 @@ export function ImportStatusBadge({ status }: { status: ImportStatus }) {
 
 export function NeedsReviewBadge() {
   return (
-    <span className="inline-flex items-center rounded-full bg-[var(--badge-warning-bg)] px-2 py-0.5 text-xs font-medium text-review">
+    <span className="inline-flex rounded-full bg-review/15 px-2.5 py-0.5 text-[11px] font-medium text-review">
       Needs review
     </span>
   );
 }
 
-export function ProductStateBadge({ isReady }: { isReady: boolean }) {
+export function ProductStateBadge({
+  isReady,
+}: {
+  isReady: boolean;
+}) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        isReady
-          ? "bg-[var(--badge-success-bg)] text-completed"
-          : "bg-[var(--badge-warning-bg)] text-processing",
+        "inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium",
+        isReady ? "bg-accent-soft text-accent" : "bg-surface-muted text-muted",
       )}
     >
-      {isReady ? "Ready" : "Processing"}
+      {isReady ? "Ready" : "In progress"}
     </span>
   );
 }
@@ -62,17 +60,13 @@ export function ConfidenceBadge({
     return <span className="text-muted">—</span>;
   }
 
-  const styles = {
-    HIGH: "bg-[var(--badge-success-bg)] text-completed",
-    MEDIUM: "bg-[var(--badge-warning-bg)] text-processing",
-    LOW: "bg-[var(--badge-neutral-bg)] text-pending",
-  } as const;
-
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        styles[confidence],
+        "inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium",
+        confidence === "HIGH" && "bg-accent-soft text-accent",
+        confidence === "MEDIUM" && "bg-surface-muted text-foreground",
+        confidence === "LOW" && "bg-review/15 text-review",
       )}
     >
       {confidence.charAt(0) + confidence.slice(1).toLowerCase()}

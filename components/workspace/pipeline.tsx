@@ -3,39 +3,38 @@ import { cn } from "@/lib/cn";
 
 const STAGES = [
   { key: "uploaded", label: "Uploaded" },
-  { key: "interpreted", label: "Interpreting" },
-  { key: "classified", label: "Verification" },
-  { key: "classified", label: "Classification" },
-  { key: "enriched", label: "Enrichment" },
-  { key: "normalized", label: "Normalization" },
+  { key: "interpreted", label: "Interpreted" },
+  { key: "classified", label: "Classified" },
+  { key: "enriched", label: "Enriched" },
+  { key: "normalized", label: "Normalized" },
   { key: "content", label: "Content" },
   { key: "assets", label: "Assets" },
-  { key: "content", label: "Ready" },
 ] as const;
 
 export function ImportPipeline({ counts }: { counts: PipelineCounts }) {
   return (
-    <ol className="grid gap-2 sm:grid-cols-3 xl:grid-cols-9">
-      {STAGES.map((stage, index) => {
+    <ol className="space-y-4">
+      {STAGES.map((stage) => {
         const done =
           stage.key === "uploaded"
             ? counts.total
             : counts[stage.key as Exclude<typeof stage.key, "uploaded">];
-        const complete = counts.total > 0 && done >= counts.total;
+        const percent = counts.total > 0 ? Math.round((done / counts.total) * 100) : 0;
 
         return (
-          <li
-            key={`${stage.label}-${index}`}
-            className={cn(
-              "rounded-xl border px-3 py-2 shadow-[var(--card-shadow)]",
-              complete
-                ? "border-accent/20 bg-accent-soft"
-                : "border-border bg-surface",
-            )}
-          >
-            <div className="text-xs font-medium text-muted">{stage.label}</div>
-            <div className="mt-1 text-sm font-semibold">
-              {done}/{counts.total}
+          <li key={stage.label}>
+            <div className="mb-1.5 flex items-baseline justify-between gap-3">
+              <p className="text-sm font-medium">{stage.label}</p>
+              <p className="text-sm text-muted tabular-nums">
+                {done} of {counts.total}
+                <span className="ml-2 text-xs">{percent}%</span>
+              </p>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out"
+                style={{ width: `${percent}%` }}
+              />
             </div>
           </li>
         );
@@ -52,21 +51,40 @@ export function ProductPipeline({
     done: boolean;
   }[];
 }) {
+  const completed = stages.filter((stage) => stage.done).length;
+  const current = stages.find((stage) => !stage.done)?.label ?? "Complete";
+
   return (
-    <ol className="flex flex-wrap gap-2">
-      {stages.map((stage) => (
-        <li
-          key={stage.label}
-            className={cn(
-              "rounded-full border px-2.5 py-1 text-xs font-medium",
-              stage.done
-                ? "border-accent/20 bg-accent-soft text-accent"
-                : "border-border bg-surface text-muted",
-            )}
-        >
-          {stage.label}
-        </li>
-      ))}
-    </ol>
+    <div>
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <p className="text-sm font-semibold">
+          {completed === stages.length ? "All stages complete" : `Currently: ${current}`}
+        </p>
+        <p className="text-sm text-muted tabular-nums">
+          {completed}/{stages.length}
+        </p>
+      </div>
+      <ol className="flex gap-1">
+        {stages.map((stage) => (
+          <li key={stage.label} className="min-w-0 flex-1">
+            <div
+              className={cn(
+                "h-1.5 rounded-full",
+                stage.done ? "bg-accent" : "bg-surface-muted",
+              )}
+            />
+            <p
+              className={cn(
+                "mt-2 truncate text-[11px]",
+                stage.done ? "font-medium text-foreground" : "text-muted",
+              )}
+              title={stage.label}
+            >
+              {stage.label}
+            </p>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }

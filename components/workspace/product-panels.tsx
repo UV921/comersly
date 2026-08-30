@@ -4,20 +4,47 @@ import { formatDocumentType } from "@/lib/product-display";
 import { CopyButton } from "./copy-button";
 import { ConfidenceBadge, NeedsReviewBadge } from "./status-badge";
 
-function Panel({
+function Section({
+  id,
   title,
   children,
 }: {
+  id: string;
   title: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="surface-card">
-      <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold">{title}</h2>
-      </div>
-      <div className="px-4 py-4">{children}</div>
+    <section id={id} className="scroll-mt-20 border-t border-border py-8 first:border-t-0 first:pt-0 last:pb-0">
+      <h2 className="mb-5 text-base font-semibold tracking-tight">{title}</h2>
+      {children}
     </section>
+  );
+}
+
+export function ProductSectionNav() {
+  const items = [
+    { href: "#classification", label: "Classification" },
+    { href: "#attributes", label: "Attributes" },
+    { href: "#copy", label: "Copy" },
+    { href: "#files", label: "Files" },
+    { href: "#sources", label: "Sources" },
+  ];
+
+  return (
+    <nav
+      aria-label="Product sections"
+      className="mb-4 flex gap-2 overflow-x-auto pb-1"
+    >
+      {items.map((item) => (
+        <a
+          key={item.href}
+          href={item.href}
+          className="shrink-0 rounded-xl bg-surface px-3 py-1.5 text-sm text-muted ring-1 ring-border transition hover:text-foreground"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
   );
 }
 
@@ -36,10 +63,8 @@ function Field({
 
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted">
-        {label}
-      </dt>
-      <dd className="mt-1 flex items-center gap-2 text-sm">
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="mt-1 flex items-center gap-2 text-[15px]">
         {value}
         {extra}
       </dd>
@@ -53,10 +78,9 @@ function ExternalUrl({ href, label }: { href: string; label?: string }) {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex max-w-full items-center gap-1 text-sm text-accent hover:underline"
+      className="inline-flex max-w-full items-center gap-1 text-sm underline decoration-border underline-offset-4 hover:decoration-foreground"
     >
       <span className="truncate">{label ?? href}</span>
-      <span aria-hidden="true">↗</span>
     </a>
   );
 }
@@ -71,8 +95,8 @@ export function ProductIdentityCard({
     evidence?.manufacturerPartNumber ?? product.rawMpn ?? null;
 
   return (
-    <Panel title="Product identity">
-      <dl className="grid gap-4 sm:grid-cols-2">
+    <Section id="identity" title="Identity">
+      <dl className="grid gap-6 sm:grid-cols-2">
         <Field label="Product name" value={evidence?.productName} />
         <Field label="Brand" value={evidence?.brandName} />
         <Field label="Manufacturer" value={evidence?.manufacturerName} />
@@ -86,8 +110,8 @@ export function ProductIdentityCard({
       </dl>
 
       {evidence?.sourceUrl ? (
-        <div className="mt-4 border-t border-border pt-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+        <div className="mt-6">
+          <p className="text-[11px] tracking-[0.16em] text-muted uppercase">
             Manufacturer source
           </p>
           <div className="mt-1">
@@ -97,19 +121,17 @@ export function ProductIdentityCard({
       ) : null}
 
       {!evidence ? (
-        <p className="text-sm text-muted">
-          Verified manufacturer identity is not available yet. Source fields
-          from the spreadsheet remain separate from verified identity.
+        <p className="text-[15px] leading-7 text-muted">
+          Verified identity appears after manufacturer evidence is extracted.
         </p>
       ) : null}
 
       {product.rawManufacturerLabel ? (
-        <p className="mt-3 text-xs text-muted">
-          Spreadsheet supplier label (not verified manufacturer):{" "}
-          {product.rawManufacturerLabel}
+        <p className="mt-4 text-sm text-muted">
+          Spreadsheet label: {product.rawManufacturerLabel}
         </p>
       ) : null}
-    </Panel>
+    </Section>
   );
 }
 
@@ -128,19 +150,13 @@ export function ClassificationPanel({
       .join(" > ") || null);
 
   return (
-    <Panel title="Classification">
-      <div className="grid gap-5 sm:grid-cols-2">
+    <Section id="classification" title="Classification">
+      <div className="grid gap-8 sm:grid-cols-2">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">
-            Verified classification
+          <p className="text-xs text-muted">Verified</p>
+          <p className="mt-2 font-semibold text-xl leading-snug">
+            {verifiedPath ?? "Not available"}
           </p>
-          {verifiedPath ? (
-            <p className="mt-1 text-sm">{verifiedPath}</p>
-          ) : (
-            <p className="mt-1 text-sm text-muted">
-              Verified classification unavailable
-            </p>
-          )}
           {verified?.needsReview ? (
             <div className="mt-2">
               <NeedsReviewBadge />
@@ -148,24 +164,20 @@ export function ClassificationPanel({
           ) : null}
         </div>
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">
-            Proposed classification
+          <p className="text-xs text-muted">Proposed</p>
+          <p className="mt-2 text-[15px] leading-7">
+            {proposedPath ?? "Not available"}
           </p>
-          {proposedPath ? (
-            <p className="mt-1 text-sm">{proposedPath}</p>
-          ) : (
-            <p className="mt-1 text-sm text-muted">Not available</p>
-          )}
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-3">
             <ConfidenceBadge confidence={proposed?.confidence ?? null} />
             {proposed?.needsReview ? <NeedsReviewBadge /> : null}
           </div>
           {proposed?.reason ? (
-            <p className="mt-2 text-xs text-muted">{proposed.reason}</p>
+            <p className="mt-3 text-sm leading-6 text-muted">{proposed.reason}</p>
           ) : null}
         </div>
       </div>
-    </Panel>
+    </Section>
   );
 }
 
@@ -177,32 +189,32 @@ export function AttributesTable({
   const attributes = product.normalization?.attributes ?? [];
 
   return (
-    <Panel title="Attributes">
+    <Section id="attributes" title="Attributes">
       {attributes.length === 0 ? (
-        <p className="text-sm text-muted">No verified attributes yet.</p>
+        <p className="text-[15px] text-muted">No verified attributes yet.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
-            <thead className="text-xs uppercase tracking-wide text-muted">
+            <thead className="text-[11px] tracking-[0.16em] text-muted uppercase">
               <tr>
-                <th className="pb-2 font-medium">Attribute</th>
-                <th className="pb-2 font-medium">Value</th>
-                <th className="pb-2 font-medium">UOM</th>
+                <th className="pb-3 font-medium">Attribute</th>
+                <th className="pb-3 font-medium">Value</th>
+                <th className="pb-3 font-medium">UOM</th>
               </tr>
             </thead>
             <tbody>
               {attributes.map((attribute) => (
                 <tr key={`${attribute.name}-${attribute.value}`} className="border-t border-border">
-                  <td className="py-2">{attribute.name}</td>
-                  <td className="py-2">{attribute.value}</td>
-                  <td className="py-2 text-muted">{attribute.uom ?? "—"}</td>
+                  <td className="py-3">{attribute.name}</td>
+                  <td className="py-3">{attribute.value}</td>
+                  <td className="py-3 text-muted">{attribute.uom ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-    </Panel>
+    </Section>
   );
 }
 
@@ -225,25 +237,25 @@ export function ProductContentPanel({
   const features = content?.features ?? [];
 
   return (
-    <Panel title="Product content">
+    <Section id="copy" title="Copy">
       {visible.length === 0 && features.length === 0 ? (
-        <p className="text-sm text-muted">Generated content is not available yet.</p>
+        <p className="text-[15px] text-muted">Generated content is not available yet.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="max-w-2xl space-y-6">
           {visible.map(([label, value]) => (
             <div key={label}>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              <p className="text-[11px] tracking-[0.16em] text-muted uppercase">
                 {label}
               </p>
-              <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{value}</p>
+              <p className="mt-2 whitespace-pre-wrap text-[15px] leading-7">{value}</p>
             </div>
           ))}
           {features.length > 0 ? (
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              <p className="text-[11px] tracking-[0.16em] text-muted uppercase">
                 Features
               </p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-[15px] leading-7">
                 {features.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}
@@ -252,59 +264,63 @@ export function ProductContentPanel({
           ) : null}
         </div>
       )}
-    </Panel>
+    </Section>
   );
 }
 
 export function AssetGallery({
   product,
+  showImages = true,
 }: {
   product: ProductIntelligence;
+  showImages?: boolean;
 }) {
   const images = product.assets?.images ?? [];
   const documents = product.assets?.documents ?? [];
   const videos = product.assets?.videos ?? [];
 
   return (
-    <Panel title="Assets">
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted">
-            Images
-          </h3>
-          {images.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">No manufacturer assets found</p>
-          ) : (
-            <ul className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-              {images.map((image) => (
-                <li key={image.url} className="overflow-hidden rounded-md border border-border">
-                  <a href={image.url} target="_blank" rel="noreferrer">
-                    {/* Manufacturer image hosts are unbounded, so next/image cannot allowlist them. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={image.url}
-                      alt={image.altText ?? "Manufacturer product image"}
-                      className="h-28 w-full object-contain bg-surface-muted"
-                    />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+    <Section id="files" title="Files">
+      <div className="space-y-8">
+        {showImages ? (
+          <div>
+            {images.length === 0 ? (
+              <p className="text-[15px] text-muted">No manufacturer images found.</p>
+            ) : (
+              <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {images.map((image) => (
+                  <li
+                    key={image.url}
+                    className="overflow-hidden rounded-[18px] bg-accent-soft"
+                  >
+                    <a href={image.url} target="_blank" rel="noreferrer">
+                      {/* Manufacturer image hosts are unbounded, so next/image cannot allowlist them. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={image.url}
+                        alt={image.altText ?? "Manufacturer product image"}
+                        className="h-28 w-full object-contain p-2"
+                      />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ) : null}
 
         <div>
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted">
+          <p className="text-[11px] tracking-[0.16em] text-muted uppercase">
             Documents
-          </h3>
+          </p>
           {documents.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">No manufacturer documents found</p>
+            <p className="mt-2 text-[15px] text-muted">None yet.</p>
           ) : (
             <ul className="mt-2 divide-y divide-border">
               {documents.map((document) => (
-                <li key={document.url} className="flex items-center justify-between gap-3 py-2">
+                <li key={document.url} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
+                    <p className="truncate text-sm">
                       {document.title ?? formatDocumentType(document.documentType)}
                     </p>
                     <p className="text-xs text-muted">
@@ -315,9 +331,9 @@ export function AssetGallery({
                     href={document.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="shrink-0 text-sm font-medium text-accent hover:underline"
+                    className="shrink-0 text-sm underline decoration-border underline-offset-4"
                   >
-                    Open ↗
+                    Open
                   </a>
                 </li>
               ))}
@@ -326,11 +342,11 @@ export function AssetGallery({
         </div>
 
         <div>
-          <h3 className="text-xs font-medium uppercase tracking-wide text-muted">
+          <p className="text-[11px] tracking-[0.16em] text-muted uppercase">
             Videos
-          </h3>
+          </p>
           {videos.length === 0 ? (
-            <p className="mt-2 text-sm text-muted">No manufacturer videos found</p>
+            <p className="mt-2 text-[15px] text-muted">None yet.</p>
           ) : (
             <ul className="mt-2 space-y-2">
               {videos.map((video) => (
@@ -342,7 +358,7 @@ export function AssetGallery({
           )}
         </div>
       </div>
-    </Panel>
+    </Section>
   );
 }
 
@@ -364,9 +380,9 @@ export function SourcesPanel({
   const sources = [...urls];
 
   return (
-    <Panel title="Sources / evidence">
+    <Section id="sources" title="Sources">
       {sources.length === 0 ? (
-        <p className="text-sm text-muted">
+        <p className="text-[15px] text-muted">
           Manufacturer evidence will appear here once a source page is verified.
         </p>
       ) : (
@@ -379,11 +395,10 @@ export function SourcesPanel({
         </ul>
       )}
       {product.manufacturerEvidence?.evidenceSummary ? (
-        <p className="mt-3 text-sm text-muted">
+        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-muted">
           {product.manufacturerEvidence.evidenceSummary}
         </p>
       ) : null}
-    </Panel>
+    </Section>
   );
 }
-

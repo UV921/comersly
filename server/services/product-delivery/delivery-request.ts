@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { ImportStatus } from "@/shared/contracts/ingestion";
 
 import { deliveryFormatSchema, type DeliveryFormat } from "./delivery-format";
-import { isImportExportable } from "./export-readiness";
+import { canDownloadDelivery } from "./export-readiness";
 
 export type DeliveryRejection = {
   status: number;
@@ -75,6 +75,8 @@ export function parseDeliveryRequest(
 export type ExportableImport = {
   clerkUserId: string;
   status: ImportStatus;
+  readyCount?: number;
+  totalCount?: number;
 };
 
 /*
@@ -96,7 +98,13 @@ export function authorizeDeliveryExport<TImport extends ExportableImport>(
     };
   }
 
-  if (!isImportExportable(importRecord.status)) {
+  if (
+    !canDownloadDelivery({
+      status: importRecord.status,
+      readyCount: importRecord.readyCount ?? 0,
+      totalCount: importRecord.totalCount ?? 0,
+    })
+  ) {
     return {
       ok: false,
       rejection: {

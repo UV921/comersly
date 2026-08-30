@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/workspace/app-shell";
+import { countActiveImports } from "@/server/db/queries/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -16,5 +17,7 @@ export default async function WorkspaceLayout({
     redirect("/sign-in");
   }
 
-  return <AppShell>{children}</AppShell>;
+  const processingCount = await countActiveImports(userId);
+
+  return <AppShell processingCount={processingCount}>{children}</AppShell>;
 }

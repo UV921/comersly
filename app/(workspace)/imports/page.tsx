@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/workspace/empty-state";
 import { ImportTable } from "@/components/workspace/import-table";
 import { PageHeader } from "@/components/workspace/page-header";
-import { PrimaryLink } from "@/components/workspace/buttons";
 import { listImportsForWorkspace } from "@/server/db/queries/workspace";
 
 export default async function ImportsPage() {
@@ -20,15 +19,14 @@ export default async function ImportsPage() {
     <>
       <PageHeader
         title="Imports"
-        description="Every uploaded spreadsheet and its enrichment progress."
-        actions={<PrimaryLink href="/upload">Upload Products</PrimaryLink>}
+        description="Spreadsheets in the pipeline. Open a file to see stage-by-stage progress."
       />
       {imports.length === 0 ? (
         <EmptyState
           title="No imports yet"
           description="Upload a CSV or XLSX file to create your first import."
           actionHref="/upload"
-          actionLabel="Upload Products"
+          actionLabel="Upload products"
         />
       ) : (
         <ImportTable imports={imports} />

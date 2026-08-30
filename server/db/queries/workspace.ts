@@ -12,7 +12,7 @@ import {
   itemNormalizationTable,
 } from "@/server/db/schema";
 import { ownedImportFilter } from "@/server/db/queries/imports";
-import { isImportExportable } from "@/server/services/product-delivery/export-readiness";
+import { canDownloadDelivery } from "@/server/services/product-delivery/export-readiness";
 import type { ProductAssets } from "@/server/services/product-assets/schema";
 import type { ProductContent } from "@/server/services/product-content/schema";
 import type { InterpretedItem } from "@/server/services/product-interpretation/schema";
@@ -43,6 +43,7 @@ export type ImportListItem = {
 export type DashboardMetrics = {
   totalImports: number;
   productsProcessed: number;
+  productsTotal: number;
   processingImports: number;
   needsReview: number;
   completedImports: number;
@@ -74,6 +75,7 @@ export type ProductRow = {
   confidence: "HIGH" | "MEDIUM" | "LOW" | null;
   needsReview: boolean;
   isReady: boolean;
+  imageUrl: string | null;
 };
 
 export type ProductIntelligence = {
@@ -111,6 +113,7 @@ function toProductRow(row: {
   verifiedClassification: ProductClassification | null;
   proposedClassification: ProposedClassification | null;
   hasContent: boolean;
+  imageUrl: string | null;
 }): ProductRow {
   const evidence = row.manufacturerEvidence;
   const proposed = row.proposedClassification;
@@ -132,6 +135,7 @@ function toProductRow(row: {
     confidence: proposed?.confidence ?? verified?.confidence ?? null,
     needsReview: Boolean(proposed?.needsReview || verified?.needsReview),
     isReady: row.hasContent,
+    imageUrl: row.imageUrl,
   };
 }
 
@@ -150,6 +154,7 @@ export async function getDashboardMetrics(
   const [productCounts] = await db
     .select({
       productsProcessed: count(itemContentTable.id),
+      productsTotal: count(ingestedItemsTable.id),
       needsReview: sql<number>`count(*) filter (where coalesce((${itemClassificationTable.proposedClassification} ->> 'needsReview')::boolean, false) or coalesce((${itemClassificationTable.verifiedClassification} ->> 'needsReview')::boolean, false))`,
     })
     .from(ingestedItemsTable)
@@ -172,7 +177,74 @@ export async function getDashboardMetrics(
     processingImports: Number(importCounts?.processingImports ?? 0),
     completedImports: Number(importCounts?.completedImports ?? 0),
     productsProcessed: Number(productCounts?.productsProcessed ?? 0),
+    productsTotal: Number(productCounts?.productsTotal ?? 0),
     needsReview: Number(productCounts?.needsReview ?? 0),
+  };
+}
+
+export async function countActiveImports(clerkUserId: string): Promise<number> {
+  const [row] = await db
+    .select({
+      processingImports: sql<number>`count(*) filter (where ${importsTable.status} in ('PENDING', 'PROCESSING'))`,
+    })
+    .from(importsTable)
+    .where(eq(importsTable.clerkUserId, clerkUserId));
+
+  return Number(row?.processingImports ?? 0);
+}
+
+export async function getWorkspacePipelineCounts(
+  clerkUserId: string,
+): Promise<PipelineCounts> {
+  const [row] = await db
+    .select({
+      total: count(ingestedItemsTable.id),
+      interpreted: count(itemInterpretation.id),
+      classified: count(itemClassificationTable.id),
+      assets: count(itemAssetsTable.id),
+      enriched: count(itemEnrichmentTable.id),
+      normalized: count(itemNormalizationTable.id),
+      content: count(itemContentTable.id),
+    })
+    .from(ingestedItemsTable)
+    .innerJoin(
+      importsTable,
+      eq(importsTable.id, ingestedItemsTable.importId),
+    )
+    .leftJoin(
+      itemInterpretation,
+      eq(itemInterpretation.ingestedItemId, ingestedItemsTable.id),
+    )
+    .leftJoin(
+      itemClassificationTable,
+      eq(itemClassificationTable.ingestedItemId, ingestedItemsTable.id),
+    )
+    .leftJoin(
+      itemAssetsTable,
+      eq(itemAssetsTable.ingestedItemId, ingestedItemsTable.id),
+    )
+    .leftJoin(
+      itemEnrichmentTable,
+      eq(itemEnrichmentTable.ingestedItemId, ingestedItemsTable.id),
+    )
+    .leftJoin(
+      itemNormalizationTable,
+      eq(itemNormalizationTable.ingestedItemId, ingestedItemsTable.id),
+    )
+    .leftJoin(
+      itemContentTable,
+      eq(itemContentTable.ingestedItemId, ingestedItemsTable.id),
+    )
+    .where(eq(importsTable.clerkUserId, clerkUserId));
+
+  return {
+    total: Number(row?.total ?? 0),
+    interpreted: Number(row?.interpreted ?? 0),
+    classified: Number(row?.classified ?? 0),
+    assets: Number(row?.assets ?? 0),
+    enriched: Number(row?.enriched ?? 0),
+    normalized: Number(row?.normalized ?? 0),
+    content: Number(row?.content ?? 0),
   };
 }
 
@@ -189,6 +261,7 @@ export async function listImportsForWorkspace(
       successfulRows: importsTable.successfulRows,
       createdAt: importsTable.createdAt,
       readyCount: sql<number>`count(${itemContentTable.id})`,
+      itemCount: sql<number>`count(${ingestedItemsTable.id})`,
     })
     .from(importsTable)
     .leftJoin(
@@ -212,7 +285,11 @@ export async function listImportsForWorkspace(
     successfulRows: row.successfulRows,
     readyCount: Number(row.readyCount ?? 0),
     createdAt: row.createdAt,
-    exportable: isImportExportable(row.status),
+    exportable: canDownloadDelivery({
+      status: row.status,
+      readyCount: Number(row.readyCount ?? 0),
+      totalCount: Number(row.itemCount ?? 0),
+    }),
   }));
 }
 
@@ -282,6 +359,7 @@ export async function listImportProductsForUser(
       verifiedClassification: itemClassificationTable.verifiedClassification,
       proposedClassification: itemClassificationTable.proposedClassification,
       contentId: itemContentTable.id,
+      imageUrl: sql<string | null>`${itemAssetsTable.productAssets} -> 'images' -> 0 ->> 'url'`,
     })
     .from(ingestedItemsTable)
     .innerJoin(
@@ -295,6 +373,10 @@ export async function listImportProductsForUser(
     .leftJoin(
       itemContentTable,
       eq(itemContentTable.ingestedItemId, ingestedItemsTable.id),
+    )
+    .leftJoin(
+      itemAssetsTable,
+      eq(itemAssetsTable.ingestedItemId, ingestedItemsTable.id),
     )
     .where(ownedImportFilter(importId, clerkUserId))
     .orderBy(
@@ -306,14 +388,16 @@ export async function listImportProductsForUser(
     toProductRow({
       ...row,
       hasContent: Boolean(row.contentId),
+      imageUrl: row.imageUrl,
     }),
   );
 }
 
 export async function listProductsForUser(
   clerkUserId: string,
+  options?: { limit?: number },
 ): Promise<ProductRow[]> {
-  const rows = await db
+  const query = db
     .select({
       id: ingestedItemsTable.id,
       importId: ingestedItemsTable.importId,
@@ -324,6 +408,7 @@ export async function listProductsForUser(
       verifiedClassification: itemClassificationTable.verifiedClassification,
       proposedClassification: itemClassificationTable.proposedClassification,
       contentId: itemContentTable.id,
+      imageUrl: sql<string | null>`${itemAssetsTable.productAssets} -> 'images' -> 0 ->> 'url'`,
     })
     .from(ingestedItemsTable)
     .innerJoin(
@@ -338,13 +423,20 @@ export async function listProductsForUser(
       itemContentTable,
       eq(itemContentTable.ingestedItemId, ingestedItemsTable.id),
     )
+    .leftJoin(
+      itemAssetsTable,
+      eq(itemAssetsTable.ingestedItemId, ingestedItemsTable.id),
+    )
     .where(eq(importsTable.clerkUserId, clerkUserId))
     .orderBy(desc(ingestedItemsTable.createdAt));
+
+  const rows = options?.limit ? await query.limit(options.limit) : await query;
 
   return rows.map((row) =>
     toProductRow({
       ...row,
       hasContent: Boolean(row.contentId),
+      imageUrl: row.imageUrl,
     }),
   );
 }

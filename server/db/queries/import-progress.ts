@@ -1,4 +1,4 @@
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import {
@@ -16,7 +16,9 @@ export async function markImportProcessing(importId: string) {
       startedAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(importsTable.id, importId));
+    .where(
+      and(eq(importsTable.id, importId), eq(importsTable.status, "PENDING")),
+    );
 }
 
 export async function syncImportCompletion(importId: string) {
@@ -35,11 +37,8 @@ export async function syncImportCompletion(importId: string) {
   const total = Number(counts?.total ?? 0);
   const ready = Number(counts?.ready ?? 0);
 
-  let status: ImportStatus = "PROCESSING";
-
-  if (total > 0 && ready >= total) {
-    status = "COMPLETED";
-  }
+  const status: ImportStatus =
+    total > 0 && ready >= total ? "COMPLETED" : "PROCESSING";
 
   await db
     .update(importsTable)
@@ -49,7 +48,12 @@ export async function syncImportCompletion(importId: string) {
       completedAt: status === "COMPLETED" ? new Date() : null,
       updatedAt: new Date(),
     })
-    .where(eq(importsTable.id, importId));
+    .where(
+      and(
+        eq(importsTable.id, importId),
+        inArray(importsTable.status, ["PENDING", "PROCESSING", "COMPLETED"]),
+      ),
+    );
 
   return { total, ready, status };
 }

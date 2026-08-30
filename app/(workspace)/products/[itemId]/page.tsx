@@ -1,18 +1,18 @@
 import { auth } from "@clerk/nextjs/server";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { Card } from "@/components/workspace/card";
 import { PageHeader } from "@/components/workspace/page-header";
-import { ProductPipeline } from "@/components/workspace/pipeline";
+import { ProductHero } from "@/components/workspace/product-hero";
 import {
   AssetGallery,
   AttributesTable,
   ClassificationPanel,
   ProductContentPanel,
   ProductIdentityCard,
+  ProductSectionNav,
   SourcesPanel,
 } from "@/components/workspace/product-panels";
-import { NeedsReviewBadge, ProductStateBadge } from "@/components/workspace/status-badge";
 import { getProductIntelligenceForUser } from "@/server/db/queries/workspace";
 
 export default async function ProductDetailPage({
@@ -37,56 +37,71 @@ export default async function ProductDetailPage({
     product.proposedClassification?.needsReview ||
       product.verifiedClassification?.needsReview,
   );
+  const evidence = product.manufacturerEvidence;
+  const title =
+    evidence?.productName ??
+    product.rawDescription ??
+    product.rawMpn ??
+    "Product";
+  const description =
+    product.content?.shortDescription ??
+    product.content?.marketingDescription ??
+    product.rawDescription;
+  const extraIdentity = Boolean(
+    evidence?.series || product.rawManufacturerLabel || !evidence,
+  );
 
   return (
-    <>
-      <div className="mb-4 text-sm text-muted">
-        <Link href={`/imports/${product.importId}`} className="hover:text-foreground">
-          {product.importFileName}
-        </Link>
-        <span> / row {product.rowNumber}</span>
-      </div>
-
+    <div>
       <PageHeader
-        title={
-          product.manufacturerEvidence?.productName ??
-          product.rawDescription ??
-          product.rawMpn ??
-          "Product"
-        }
-        description="Internal product intelligence. This is not the 252-column delivery spreadsheet."
-        actions={
-          <div className="flex items-center gap-2">
-            <ProductStateBadge isReady={product.hasContent} />
-            {needsReview ? <NeedsReviewBadge /> : null}
-          </div>
-        }
+        crumbs={[
+          { href: "/products", label: "Catalog" },
+          { label: title },
+        ]}
+        description={`From ${product.importFileName}, row ${product.rowNumber}. Open a section below for classification, copy, and files.`}
       />
 
-      <div className="mb-6">
-        <ProductPipeline
-          stages={[
-            { label: "Uploaded", done: true },
-            { label: "Interpreting", done: product.hasInterpretation },
-            { label: "Verification", done: product.hasClassification },
-            { label: "Classification", done: product.hasClassification },
-            { label: "Enrichment", done: product.hasEnrichment },
-            { label: "Normalization", done: product.hasNormalization },
-            { label: "Content", done: product.hasContent },
-            { label: "Assets", done: product.hasAssets },
-            { label: "Ready", done: product.hasContent },
-          ]}
-        />
-      </div>
+      <ProductHero
+        importId={product.importId}
+        importFileName={product.importFileName}
+        rowNumber={product.rowNumber}
+        title={title}
+        brand={evidence?.brandName ?? null}
+        manufacturer={evidence?.manufacturerName ?? null}
+        mpn={evidence?.manufacturerPartNumber ?? product.rawMpn}
+        productType={evidence?.productType ?? null}
+        description={description}
+        isReady={product.hasContent}
+        needsReview={needsReview}
+        confidence={
+          product.proposedClassification?.confidence ??
+          product.verifiedClassification?.confidence ??
+          null
+        }
+        sourceUrl={evidence?.sourceUrl ?? null}
+        images={product.assets?.images ?? []}
+        stages={[
+          { label: "Uploaded", done: true },
+          { label: "Interpreted", done: product.hasInterpretation },
+          { label: "Classified", done: product.hasClassification },
+          { label: "Enriched", done: product.hasEnrichment },
+          { label: "Normalized", done: product.hasNormalization },
+          { label: "Content", done: product.hasContent },
+          { label: "Assets", done: product.hasAssets },
+        ]}
+      />
 
-      <div className="space-y-4">
-        <ProductIdentityCard product={product} />
-        <ClassificationPanel product={product} />
-        <AttributesTable product={product} />
-        <ProductContentPanel product={product} />
-        <AssetGallery product={product} />
-        <SourcesPanel product={product} />
+      <div className="mt-6">
+        <ProductSectionNav />
+        <Card>
+          {extraIdentity ? <ProductIdentityCard product={product} /> : null}
+          <ClassificationPanel product={product} />
+          <AttributesTable product={product} />
+          <ProductContentPanel product={product} />
+          <AssetGallery product={product} showImages={false} />
+          <SourcesPanel product={product} />
+        </Card>
       </div>
-    </>
+    </div>
   );
 }

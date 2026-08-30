@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
 
 import { getImportForUser } from "@/server/db/queries/imports";
+import { syncImportCompletion } from "@/server/db/queries/import-progress";
 import { getProductDeliveryInputsForImport } from "@/server/db/queries/product-delivery";
 import { createDeliveryFile } from "@/server/services/product-delivery/create-delivery-file";
 import {
@@ -44,8 +45,24 @@ export async function GET(
       parsed.value.userId,
     );
 
+    const progress = importRecord
+      ? await syncImportCompletion(importRecord.id)
+      : null;
+
+    const refreshedImport = importRecord
+      ? await getImportForUser(parsed.value.importId, parsed.value.userId)
+      : null;
+
+    const candidate = refreshedImport ?? importRecord;
+
     const authorized = authorizeDeliveryExport(
-      importRecord,
+      candidate
+        ? {
+            ...candidate,
+            readyCount: progress?.ready ?? 0,
+            totalCount: progress?.total ?? 0,
+          }
+        : null,
       parsed.value.userId,
     );
 

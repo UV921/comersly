@@ -22,3 +22,15 @@ export function isImportExportable(status: ImportStatus): boolean {
     (exportable) => exportable === status,
   );
 }
+
+export function canDownloadDelivery(input: {
+  status: ImportStatus;
+  readyCount: number;
+  totalCount: number;
+}): boolean {
+  if (isImportExportable(input.status)) {
+    return true;
+  }
+
+  return input.totalCount > 0 && input.readyCount >= input.totalCount;
+}

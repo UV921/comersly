@@ -58,14 +58,33 @@ export function formatConfidence(
   return confidence.charAt(0) + confidence.slice(1).toLowerCase();
 }
 
-export function formatDateTime(value: Date | string | null | undefined): string {
+function toValidDate(value: Date | string | null | undefined): Date | null {
   if (!value) {
-    return "—";
+    return null;
   }
 
   const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
 
-  if (Number.isNaN(date.getTime())) {
+export function formatDate(value: Date | string | null | undefined): string {
+  const date = toValidDate(value);
+
+  if (!date) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+export function formatDateTime(value: Date | string | null | undefined): string {
+  const date = toValidDate(value);
+
+  if (!date) {
     return "—";
   }
 

@@ -33,6 +33,8 @@ export const processIngestedFunction = inngest.createFunction(
     const item = await step.run("loaded-ingested-item", async () => {
       return processIngestedItem(itemId);
     });
+
+    try {
     const interpretation = await step.run("interpret-product", async () => {
       return interpretProduct(item.rawData);
     });
@@ -129,10 +131,11 @@ export const processIngestedFunction = inngest.createFunction(
         });
       },
     );
-    await step.run("sync-import-progress", async () => {
-      return syncImportCompletion(item.importId);
-    });
-
-    return { itemId: item.id, interpretationID: persistedInterpretation.id };
+      return { itemId: item.id, interpretationID: persistedInterpretation?.id };
+    } finally {
+      await step.run("sync-import-progress", async () => {
+        return syncImportCompletion(item.importId);
+      });
+    }
   },
 );

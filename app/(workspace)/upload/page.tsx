@@ -5,8 +5,8 @@ export default function UploadPage() {
   return (
     <>
       <PageHeader
-        title="Upload products"
-        description="Upload product data and Comersly will identify, verify and enrich each product."
+        title="Upload"
+        description="One CSV or XLSX. Each row becomes a product, then moves through interpret, classify, enrich, and export."
       />
       <UploadForm />
     </>

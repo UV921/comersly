@@ -67,7 +67,7 @@ export function createZipArchive(entries: readonly ZipEntry[]): Buffer {
     const localHeader = Buffer.alloc(30);
     localHeader.writeUInt32LE(LOCAL_FILE_HEADER_SIGNATURE, 0);
     localHeader.writeUInt16LE(VERSION_NEEDED, 4);
-    localHeader.writeUInt16LE(0, 6); // general purpose flags
+    localHeader.writeUInt16LE(0x0800, 6); // UTF-8 names and contents
     localHeader.writeUInt16LE(DEFLATE_METHOD, 8);
     localHeader.writeUInt16LE(DOS_EPOCH_TIME, 10);
     localHeader.writeUInt16LE(DOS_EPOCH_DATE, 12);
@@ -83,7 +83,7 @@ export function createZipArchive(entries: readonly ZipEntry[]): Buffer {
     centralHeader.writeUInt32LE(CENTRAL_DIRECTORY_SIGNATURE, 0);
     centralHeader.writeUInt16LE(VERSION_NEEDED, 4); // version made by
     centralHeader.writeUInt16LE(VERSION_NEEDED, 6);
-    centralHeader.writeUInt16LE(0, 8);
+    centralHeader.writeUInt16LE(0x0800, 8); // UTF-8 names and contents
     centralHeader.writeUInt16LE(DEFLATE_METHOD, 10);
     centralHeader.writeUInt16LE(DOS_EPOCH_TIME, 12);
     centralHeader.writeUInt16LE(DOS_EPOCH_DATE, 14);

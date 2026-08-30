@@ -6,30 +6,40 @@ import { PageHeader } from "@/components/workspace/page-header";
 import { ProductTable } from "@/components/workspace/product-table";
 import { listProductsForUser } from "@/server/db/queries/workspace";
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
   }
 
+  const { q } = await searchParams;
   const products = await listProductsForUser(userId);
 
   return (
     <>
       <PageHeader
-        title="Products"
-        description="Enriched product records across your imports. Brand and manufacturer come from verified evidence, not spreadsheet supplier labels."
+        title="Catalog"
+        description="Every product from your spreadsheets. Open one for identity, classification, and copy."
       />
       {products.length === 0 ? (
         <EmptyState
-          title="No products found"
-          description="Upload a spreadsheet to start generating product intelligence."
+          title="The catalog is empty"
+          description="Upload a spreadsheet to start generating product records."
           actionHref="/upload"
-          actionLabel="Upload Products"
+          actionLabel="Upload a spreadsheet"
         />
       ) : (
-        <ProductTable products={products} showImport />
+        <ProductTable
+          key={q ?? ""}
+          products={products}
+          showImport
+          initialQuery={q ?? ""}
+        />
       )}
     </>
   );
