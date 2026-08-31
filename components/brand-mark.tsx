@@ -25,7 +25,7 @@ export function BrandMark({
         <span
           className={cn(
             "font-display text-[22px] leading-none tracking-tight",
-            inverted ? "text-white" : "text-foreground",
+            inverted ? "text-accent-foreground" : "text-foreground",
           )}
         >
           Comersly

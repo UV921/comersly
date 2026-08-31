@@ -174,7 +174,7 @@ export function UploadForm() {
         type="button"
         onClick={handleUpload}
         disabled={isUploading || !selectedFile}
-        className="inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-accent-foreground hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isUploading ? "Starting..." : "Start Processing"}
       </button>

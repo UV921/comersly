@@ -23,8 +23,6 @@ import {
 } from "@/components/landing/landing-story";
 import { BrandMark } from "@/components/brand-mark";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { CloudShader } from "@/components/ui/cloud-shader";
-import { useTheme } from "@/components/theme/theme-provider";
 
 const NAV = [
   { href: "#why", label: "Why" },
@@ -69,16 +67,14 @@ function AuthButtons({
 }
 
 const primaryCta =
-  "inline-flex h-11 items-center rounded-full bg-accent px-6 text-sm font-medium text-white hover:bg-accent-hover";
+  "inline-flex h-11 items-center rounded-full bg-accent px-6 text-sm font-medium text-accent-foreground hover:bg-accent-hover";
 const ghostCta =
-  "inline-flex h-11 items-center rounded-full bg-surface/80 px-6 text-sm font-medium text-foreground backdrop-blur-sm hover:bg-surface";
+  "inline-flex h-11 items-center rounded-full px-6 text-sm font-medium text-foreground ring-1 ring-border hover:bg-surface";
 
 export function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const reduce = useReducedMotion();
   const { isSignedIn } = useAuth();
-  const { theme } = useTheme();
-  const dark = theme === "dark";
 
   return (
     <div className="workspace-shell">
@@ -127,67 +123,50 @@ export function LandingPage() {
         ) : null}
       </header>
 
-      <section className="relative isolate overflow-hidden">
-        <CloudShader
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full"
-          speed={0.32}
-          count={6}
-          cloudColor={dark ? "#d7ece6" : "#ffffff"}
-          skyTopColor={dark ? "#1a3d34" : "#8aa89a"}
-          skyBottomColor={dark ? "#0c1412" : "#f6f4ef"}
-        />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-24 bg-gradient-to-t from-canvas to-transparent" />
-
-        <div className="relative z-10 px-5 pt-12 pb-14 sm:px-8 sm:pt-16 sm:pb-16">
-          <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
-            <motion.p
-              initial={reduce ? false : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease }}
-              className="text-[11px] font-medium tracking-[0.2em] text-accent uppercase"
-            >
-              Catalogs from supplier files
-            </motion.p>
-            <motion.h1
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.05, ease }}
-              className="mt-3 text-2xl font-semibold tracking-tight text-balance sm:text-3xl"
-            >
-              Supplier spreadsheets, turned into a catalog.
-            </motion.h1>
-            <motion.p
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.1, ease }}
-              className="mt-3 max-w-md text-sm leading-6 text-muted"
-            >
-              Each row is read, checked, classified, and given a photo.
-            </motion.p>
-            <motion.div
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.16, ease }}
-              className="mt-7 flex flex-wrap items-center justify-center gap-3"
-            >
-              <Link href={isSignedIn ? "/dashboard" : "/sign-up"} className={primaryCta}>
-                {isSignedIn ? "Open workspace" : "Start with a spreadsheet"}
-              </Link>
-              <a href="#how" className={ghostCta}>
-                See how it works
-              </a>
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 16 }}
+      <section className="px-5 pt-12 pb-12 sm:px-8 sm:pt-16 sm:pb-16">
+        <div className="mx-auto flex max-w-xl flex-col items-center text-center">
+          <motion.h1
+            initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto mt-10 w-full max-w-4xl"
+            transition={{ duration: 0.5, ease }}
+            className="text-xl font-semibold tracking-tight text-balance sm:text-2xl sm:leading-snug"
           >
-            <HeroDashboard />
+            Just upload a messy spreadsheet.
+          </motion.h1>
+          <motion.p
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.06, ease }}
+            className="mt-3 max-w-md text-sm leading-6 text-muted sm:text-base"
+          >
+            Get the commerce-ready file in one click.
+          </motion.p>
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12, ease }}
+            className="mt-6 flex flex-wrap items-center justify-center gap-3"
+          >
+            <Link href={isSignedIn ? "/dashboard" : "/sign-up"} className={primaryCta}>
+              {isSignedIn ? "Open workspace" : "Get started"}
+            </Link>
+            <a href="#how" className={ghostCta}>
+              See how it works
+            </a>
           </motion.div>
         </div>
+
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.14, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto mt-10 w-full max-w-5xl"
+        >
+          <HeroDashboard />
+          <p className="mt-3 text-center text-xs text-muted">
+            The workspace after one import — classified products, ready to export.
+          </p>
+        </motion.div>
       </section>
 
       <main>
@@ -203,7 +182,7 @@ export function LandingPage() {
         <WhoSection />
         <CloseCta
           href={isSignedIn ? "/dashboard" : "/sign-up"}
-          label={isSignedIn ? "Open workspace" : "Start with a spreadsheet"}
+          label={isSignedIn ? "Open workspace" : "Get started"}
         />
       </main>
 

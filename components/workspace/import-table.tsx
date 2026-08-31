@@ -59,7 +59,7 @@ export function ImportTable({
 
   if (!framed) {
     return (
-      <div className="rounded-[28px] bg-surface px-5 py-4 sm:px-6">
+      <div className="rounded-[28px] bg-canvas px-5 py-4 sm:px-6">
         {heading}
         {list}
       </div>

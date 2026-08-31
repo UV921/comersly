@@ -211,7 +211,7 @@ export function AppShell({
             <SidebarAccount />
           </SidebarBody>
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface md:rounded-tl-2xl">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface md:rounded-tl-2xl md:ring-1 md:ring-inset md:ring-border">
             <header className="flex h-[72px] shrink-0 items-center gap-3 px-5 sm:px-8">
               <SidebarTrigger className="bg-surface-muted" />
               <WorkspaceSearch />

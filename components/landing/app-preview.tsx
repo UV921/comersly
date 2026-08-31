@@ -131,14 +131,14 @@ export function AppPreview() {
         <div className="px-4 pb-4">
           <p className="text-xl font-semibold tracking-tight">Dashboard</p>
           <div className="mt-3 grid grid-cols-[1.3fr_0.7fr] gap-3">
-            <div className="rounded-[20px] bg-accent px-5 py-4 text-white">
-              <p className="text-[10px] tracking-[0.18em] text-white/55 uppercase">Catalog</p>
+            <div className="rounded-[20px] bg-canvas px-5 py-4">
+              <p className="text-[10px] tracking-[0.18em] text-muted uppercase">Catalog</p>
               <p className="mt-2 text-4xl font-semibold tabular-nums">{ready}</p>
-              <p className="mt-1 text-xs text-white/70">{ready} of 120 products ready</p>
+              <p className="mt-1 text-xs text-muted">{ready} of 120 products ready</p>
             </div>
-            <div className="flex flex-col justify-between rounded-[20px] bg-accent-soft px-4 py-4">
-              <p className="text-[10px] tracking-[0.18em] text-accent uppercase">Review</p>
-              <p className="text-3xl font-semibold text-accent">6</p>
+            <div className="flex flex-col justify-between rounded-[20px] bg-canvas px-4 py-4">
+              <p className="text-[10px] tracking-[0.18em] text-muted uppercase">Review</p>
+              <p className="text-3xl font-semibold">6</p>
               <p className="text-xs text-muted">needs a look</p>
             </div>
           </div>
@@ -169,7 +169,7 @@ export function AppPreview() {
 export function HeroDashboard() {
   return (
     <div
-      className="@container relative w-full overflow-hidden rounded-[22px] bg-canvas shadow-[0_22px_56px_rgb(30_77_64/0.2)] ring-1 ring-black/5"
+      className="@container relative w-full overflow-hidden rounded-[22px] bg-canvas shadow-[var(--card-shadow)] ring-1 ring-border"
       style={{ aspectRatio: `${PREVIEW_WIDTH} / ${PREVIEW_HEIGHT}` }}
     >
       <div

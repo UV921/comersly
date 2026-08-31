@@ -30,7 +30,7 @@ export function ExportActions({
     <div className="flex flex-wrap items-center gap-2">
       <a
         href={`/api/imports/${importId}/delivery?format=csv`}
-        className="inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover"
+        className="inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
       >
         Download CSV
       </a>

@@ -291,7 +291,7 @@ export function AssetGallery({
                 {images.map((image) => (
                   <li
                     key={image.url}
-                    className="overflow-hidden rounded-[18px] bg-accent-soft"
+                    className="overflow-hidden rounded-[18px] bg-product-well"
                   >
                     <a href={image.url} target="_blank" rel="noreferrer">
                       {/* Manufacturer image hosts are unbounded, so next/image cannot allowlist them. */}

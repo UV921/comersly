@@ -29,11 +29,11 @@ export function ProductStrip({
         const name = productName(product);
         const body = (
           <>
-            <div className="aspect-square overflow-hidden rounded-2xl bg-surface-muted">
+            <div className="aspect-square overflow-hidden rounded-2xl bg-product-well">
               <ProductImage
                 src={product.imageUrl}
                 alt={name}
-                className="h-full w-full"
+                className="h-full w-full bg-product-well"
                 imgClassName="object-contain p-3"
               />
             </div>
@@ -47,11 +47,11 @@ export function ProductStrip({
         return (
           <li key={product.id}>
             {interactive ? (
-              <Link href={`/products/${product.id}`} className="block rounded-[22px] bg-surface p-3">
+              <Link href={`/products/${product.id}`} className="block rounded-[22px] bg-canvas p-3">
                 {body}
               </Link>
             ) : (
-              <div className="rounded-[22px] bg-surface p-3">{body}</div>
+              <div className="rounded-[22px] bg-canvas p-3">{body}</div>
             )}
           </li>
         );
@@ -81,11 +81,11 @@ export function ProductGrid({
         return (
           <li key={product.id}>
             <Link href={`/products/${product.id}`} className="group block">
-              <div className="aspect-square overflow-hidden rounded-2xl bg-surface">
+              <div className="aspect-square overflow-hidden rounded-2xl bg-product-well">
                 <ProductImage
                   src={product.imageUrl}
                   alt={name}
-                  className="h-full w-full bg-surface"
+                  className="h-full w-full bg-product-well"
                   imgClassName="object-contain p-5 transition duration-300 group-hover:scale-[1.03]"
                 />
               </div>
@@ -119,7 +119,7 @@ function FilterChip({
       className={cn(
         "h-9 rounded-xl px-3 text-sm transition",
         active
-          ? "bg-accent text-white"
+          ? "bg-accent text-accent-foreground"
           : "border border-border bg-surface text-muted hover:text-foreground",
       )}
     >

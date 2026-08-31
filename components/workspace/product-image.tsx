@@ -21,7 +21,7 @@ export function ProductImage({
   return (
     <div
       className={cn(
-        "flex items-center justify-center overflow-hidden bg-surface-muted",
+        "flex items-center justify-center overflow-hidden bg-product-well",
         className,
       )}
     >

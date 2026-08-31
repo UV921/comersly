@@ -98,9 +98,9 @@ export function ClassificationDemo({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[28px] border shadow-[0_16px_48px_rgb(30_77_64/0.08)]",
+        "overflow-hidden rounded-[28px] border shadow-[var(--card-shadow)]",
         visual
-          ? "border-white/15 bg-[#070b12]/78 backdrop-blur-xl"
+          ? "border-border bg-surface/90 backdrop-blur-xl"
           : "border-border bg-surface",
       )}
       onMouseEnter={() => setPaused(true)}
@@ -115,7 +115,7 @@ export function ClassificationDemo({
             className={cn(
               "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
               index === stage
-                ? "bg-accent text-white"
+                ? "bg-accent text-accent-foreground"
                 : "text-muted hover:text-foreground",
             )}
           >
@@ -211,7 +211,7 @@ export function ClassificationDemo({
               {active.id === "classify" ? (
                 <div className="space-y-5">
                   <div className="flex items-center gap-4">
-                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-surface-muted">
+                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-product-well">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/products/product-qo120.png"

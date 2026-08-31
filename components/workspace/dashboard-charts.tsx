@@ -31,21 +31,21 @@ function AreaChart({
       <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full" preserveAspectRatio="none">
         <defs>
           <linearGradient id="workspace-chart-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#5ec8b0" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#5ec8b0" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--chart)" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="var(--chart)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={`${line} L ${width} ${height} L 0 ${height} Z`} fill="url(#workspace-chart-fill)" />
         <path
           d={line}
           fill="none"
-          stroke="#5ec8b0"
+          stroke="var(--chart)"
           strokeWidth="2.5"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
         {last ? (
-          <circle cx={last[0]} cy={last[1]} r="4" fill="#1e4d40" stroke="#fff" strokeWidth="2" />
+          <circle cx={last[0]} cy={last[1]} r="4" fill="var(--accent)" stroke="var(--surface)" strokeWidth="2" />
         ) : null}
       </svg>
       {startLabel && endLabel ? (
@@ -88,7 +88,7 @@ export function DashboardCharts({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[28px] bg-surface p-5">
+      <div className="rounded-[28px] bg-canvas p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm text-muted">Catalog progress</p>
@@ -109,7 +109,7 @@ export function DashboardCharts({
         </div>
       </div>
 
-      <div className="rounded-[28px] bg-surface p-5">
+      <div className="rounded-[28px] bg-canvas p-5">
         <p className="text-sm text-muted">Pipeline</p>
         <ul className="mt-4 space-y-3">
           {PIPELINE_STAGES.map((stage) => {
@@ -137,7 +137,7 @@ export function DashboardCharts({
         </ul>
         <Link
           href="/upload"
-          className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-full bg-accent text-sm font-medium text-white hover:bg-accent-hover"
+          className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-foreground hover:bg-accent-hover"
         >
           Upload a file
         </Link>

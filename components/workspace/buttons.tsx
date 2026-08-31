@@ -10,7 +10,7 @@ export function PrimaryLink({
   return (
     <Link
       href={href}
-      className="inline-flex h-10 items-center rounded-full bg-accent px-5 text-sm font-medium text-white hover:bg-accent-hover"
+      className="inline-flex h-10 items-center rounded-full bg-accent px-5 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
     >
       {children}
     </Link>

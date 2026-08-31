@@ -43,7 +43,7 @@ export function ProductShot({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl bg-canvas shadow-[0_10px_28px_rgb(30_77_64/0.08)] ring-1 ring-black/5",
+        "overflow-hidden rounded-2xl bg-product-well shadow-[var(--card-shadow)] ring-1 ring-border",
         className,
       )}
     >
@@ -52,61 +52,98 @@ export function ProductShot({
   );
 }
 
-const SHEET = {
-  headers: ["Mfg_Part", "E1_Brand", "Part_Manuf"],
-  rows: [
-    ["QO120", "SQD", "SQUARE D"],
-    ["QO115", "???", "SCHNEIDR"],
-  ],
-};
+export const IMPORT_HEADERS = ["Mfg_Part", "E1_Brand", "Part_Manuf"] as const;
+
+export const IMPORT_MESSY = [
+  ["QO120", "SQD", "SQUARE D"],
+  ["QO115", "???", "SCHNEIDR"],
+  ["QO120CAFIC", "SQD", ""],
+  ["5SJ4106", "SIEM", "SIEMNS"],
+] as const;
+
+export const IMPORT_CLEAN = [
+  ["QO120", "Square D", "Schneider Electric"],
+  ["QO115", "Square D", "Schneider Electric"],
+  ["QO120CAFIC", "Square D", "Schneider Electric"],
+  ["5SJ4106", "Siemens", "Siemens"],
+] as const;
+
+export const IMPORT_PATHS = [
+  "Electrical / Circuit Protection / MCB",
+  "Electrical / Circuit Protection / MCB",
+  "Electrical / Circuit Protection / AFCI",
+  "Electrical / Circuit Protection / MCB",
+] as const;
 
 export function SheetTable({
   active,
   messy = false,
+  mode,
+  activeRow = null,
+  full = false,
 }: {
   active?: { row: number; col: number } | null;
   messy?: boolean;
+  mode?: "messy" | "clean" | "classify";
+  activeRow?: number | null;
+  full?: boolean;
 }) {
+  const resolved = mode ?? (messy ? "messy" : "clean");
+  const source = resolved === "messy" ? IMPORT_MESSY : IMPORT_CLEAN;
+  const rows = full ? source : source.slice(0, 2);
+
   return (
     <div className="overflow-hidden rounded-xl bg-surface ring-1 ring-border">
-      <div className="flex h-7 items-center gap-1.5 bg-surface-muted px-2.5">
+      <div className="flex h-8 items-center gap-1.5 bg-surface-muted px-2.5">
         <span className="h-1.5 w-1.5 rounded-full bg-failed" />
         <span className="h-1.5 w-1.5 rounded-full bg-review" />
         <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-        <span className="ml-1 truncate font-mono text-[9px] text-muted">schneider-qo.xlsx</span>
+        <span className="ml-1 truncate font-mono text-[10px] text-muted">
+          schneider-qo.xlsx · 48 rows
+        </span>
       </div>
-      <table className="w-full border-collapse text-left font-mono text-[10px]">
+      <table className="w-full border-collapse text-left font-mono text-[10px] sm:text-[11px]">
         <thead>
           <tr className="bg-canvas">
-            {SHEET.headers.map((header) => (
-              <th key={header} className="px-2 py-1.5 font-medium text-muted">
+            {IMPORT_HEADERS.map((header) => (
+              <th key={header} className="px-2.5 py-2 font-medium text-muted">
                 {header}
               </th>
             ))}
+            {resolved === "classify" ? (
+              <th className="px-2.5 py-2 font-medium text-accent">Classpath</th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
-          {SHEET.rows.map((row, r) => (
-            <tr key={row[0]}>
-              {row.map((cell, c) => {
-                const on = active?.row === r && active?.col === c;
-                const warn = messy && (cell === "SQD" || cell === "???");
-                return (
-                  <td key={`${r}-${c}`} className="p-0">
-                    <span
+          {rows.map((row, r) => {
+            const rowOn = activeRow === r;
+            return (
+              <tr key={row[0]} className={rowOn ? "bg-accent-soft" : undefined}>
+                {row.map((cell, c) => {
+                  const on = active?.row === r && active?.col === c;
+                  const warn =
+                    resolved === "messy" &&
+                    (cell === "SQD" || cell === "???" || cell === "SIEM" || cell === "");
+                  return (
+                    <td
+                      key={`${r}-${c}`}
                       className={cn(
-                        "block px-2 py-1.5 transition-colors duration-300",
-                        on && "bg-accent-soft text-accent",
-                        warn && !on && "text-failed",
+                        "px-2.5 py-2",
+                        (on || rowOn) && "text-accent",
+                        warn && !on && !rowOn && "text-failed",
                       )}
                     >
-                      {cell}
-                    </span>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+                      {cell || "—"}
+                    </td>
+                  );
+                })}
+                {resolved === "classify" ? (
+                  <td className="px-2.5 py-2 text-accent">{IMPORT_PATHS[r]}</td>
+                ) : null}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -153,7 +190,7 @@ export function DropZone({ landed }: { landed: boolean }) {
         <p className="mt-1 text-sm font-semibold tracking-tight">Drop CSV or XLSX</p>
       </div>
       <motion.div
-        className="absolute left-1/2 w-48 -translate-x-1/2 rounded-xl bg-surface px-3 py-2 shadow-[0_8px_20px_rgb(30_77_64/0.1)] ring-1 ring-border"
+        className="absolute left-1/2 w-48 -translate-x-1/2 rounded-xl bg-surface px-3 py-2 shadow-[var(--card-shadow)] ring-1 ring-border"
         initial={false}
         animate={{ top: landed ? "46%" : "10%", scale: landed ? 1 : 0.96 }}
         transition={{ duration: 0.7, ease }}
@@ -196,7 +233,7 @@ export function FilePair({ active }: { active: "csv" | "xlsx" | null }) {
           <div
             className={cn(
               "flex h-16 items-center justify-center rounded-xl text-xs font-medium",
-              id === "csv" ? "bg-accent text-white" : "bg-surface text-accent ring-1 ring-border",
+              id === "csv" ? "bg-accent text-accent-foreground" : "bg-surface text-accent ring-1 ring-border",
             )}
           >
             {kind}
@@ -218,7 +255,7 @@ export function CatalogCard({
   meta: string;
 }) {
   return (
-    <div className="w-40 rounded-[22px] bg-surface p-3 ring-1 ring-black/5">
+    <div className="w-40 rounded-[22px] bg-surface p-3 ring-1 ring-border">
       <ProductShot src={src} alt={name} className="aspect-square" />
       <p className="mt-2 truncate text-xs font-medium">{name}</p>
       <p className="truncate text-[11px] text-muted">{meta}</p>

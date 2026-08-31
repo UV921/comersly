@@ -3,35 +3,38 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 
+import { HeroStory } from "@/components/landing/hero-story";
 import {
   CatalogShowcase,
   ClassifyScene,
-  HowScene,
 } from "@/components/landing/landing-explainers";
-import { ExportGrid, ProblemScenes } from "@/components/landing/landing-more";
+import { ExportGrid, WhyPicture } from "@/components/landing/landing-more";
 import { ProductShot, QO120 } from "@/components/landing/landing-visuals";
 import { ImportPipeline } from "@/components/workspace/pipeline";
 import type { PipelineCounts } from "@/server/db/queries/workspace";
 
-const PIPELINE_STAGES = [
-  "Uploaded",
-  "Interpreted",
-  "Classified",
-  "Enriched",
-  "Normalized",
-  "Content",
-  "Assets",
+const PIPELINE_COPY = [
+  { label: "Uploaded", detail: "The supplier file is stored. Rows are not products yet." },
+  { label: "Interpreted", detail: "Raw cells are mapped to catalog fields." },
+  { label: "Classified", detail: "Dept, Class, Fine, and Classpath are written." },
+  { label: "Enriched", detail: "Manufacturer evidence is attached to the row." },
+  { label: "Normalized", detail: "Units, names, and attributes are cleaned." },
+  { label: "Content", detail: "Catalog copy is written from the verified product." },
+  { label: "Assets", detail: "The manufacturer photo lands on the record." },
 ] as const;
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 function PipelineStageVisual({ stage }: { stage: number }) {
+  const current = PIPELINE_COPY[stage] ?? PIPELINE_COPY[0];
+
   return (
     <div className="mt-8 flex items-center justify-center gap-4">
       <ProductShot src={QO120} alt="QO120" className="h-16 w-16" />
       <div>
-        <p className="text-sm font-medium">{PIPELINE_STAGES[stage]}</p>
-        <p className="text-xs text-muted">QO 20A 1-pole · Square D</p>
+        <p className="text-sm font-medium">{current.label}</p>
+        <p className="mt-0.5 text-xs leading-5 text-muted">{current.detail}</p>
+        <p className="mt-1 text-xs text-muted">QO 20A 1-pole · Square D</p>
       </div>
     </div>
   );
@@ -54,7 +57,7 @@ function SectionIntro({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.4 }}
       transition={{ duration: 0.55, ease }}
-      className="max-w-xl"
+      className="max-w-2xl"
     >
       <p className="text-[10px] font-medium tracking-[0.18em] text-accent uppercase">{eyebrow}</p>
       <h2 className="mt-1.5 text-xl font-semibold tracking-tight">{title}</h2>
@@ -69,10 +72,10 @@ export function WhySection() {
       <div className="mx-auto max-w-6xl">
         <SectionIntro
           eyebrow="Why"
-          title="A spreadsheet is not a catalog."
-          sub="Messy columns, no photo, no path."
+          title="A supplier spreadsheet cannot go on a storefront."
+          sub="Abbreviations, no photos, no catalog path. That is what you upload — and what Comersly has to fix."
         />
-        <ProblemScenes />
+        <WhyPicture />
       </div>
     </section>
   );
@@ -86,8 +89,8 @@ export function HowSection() {
       <div className="mx-auto max-w-6xl">
         <SectionIntro
           eyebrow="How"
-          title="From a file to a catalog."
-          sub="Six steps. The sheet stays raw."
+          title="Upload. Interpret. Catalog. Export."
+          sub="The full import — every messy row, not one product. Watch a file become a commerce-ready catalog."
         />
         <motion.div
           className="mt-6"
@@ -96,7 +99,7 @@ export function HowSection() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.55, ease }}
         >
-          <HowScene />
+          <HeroStory />
         </motion.div>
       </div>
     </section>
@@ -122,8 +125,8 @@ export function PipelineSection() {
       <div className="mx-auto max-w-6xl">
         <SectionIntro
           eyebrow="Pipeline"
-          title="Watch the stages fill."
-          sub="Same bars as the workspace."
+          title="Watch one import move through the stages."
+          sub="Interpret, classify, write copy, then attach the manufacturer photo."
         />
         <motion.div
           className="mx-auto mt-6 max-w-3xl rounded-[28px] bg-surface px-6 py-8 sm:px-10"
@@ -134,7 +137,7 @@ export function PipelineSection() {
         >
           <ImportPipeline counts={countsAt(tick)} />
           <PipelineStageVisual
-            stage={Math.min(Math.floor(tick / 6), PIPELINE_STAGES.length - 1)}
+            stage={Math.min(Math.floor(tick / 6), PIPELINE_COPY.length - 1)}
           />
         </motion.div>
       </div>
@@ -164,8 +167,8 @@ export function ClassifySection() {
       <div className="mx-auto max-w-6xl">
         <SectionIntro
           eyebrow="Classify"
-          title="Dept, Class, and Fine."
-          sub="One row becomes a storefront path."
+          title="Each row gets a storefront path."
+          sub="Dept, Class, and Fine are written from the manufacturer page — not from SQD or SCHNEIDR."
         />
         <motion.div
           className="mt-6"
@@ -189,8 +192,8 @@ export function CatalogSection() {
       <div className="mx-auto max-w-6xl">
         <SectionIntro
           eyebrow="Catalog"
-          title="Ready products, with photos."
-          sub="Name, brand, and a path you can open."
+          title="The sheet is now a catalog you can open."
+          sub="Name, brand, photo, and path on every product — ready to review or export."
         />
         <motion.div
           className="mt-6"
@@ -212,8 +215,8 @@ export function DeliverySection() {
       <div className="mx-auto max-w-6xl">
         <SectionIntro
           eyebrow="Export"
-          title="Download the delivery file."
-          sub="CSV or XLSX. Not the original sheet."
+          title="One click. Commerce-ready file."
+          sub="CSV or XLSX with classified columns. The supplier sheet stays raw."
         />
         <ExportGrid />
       </div>

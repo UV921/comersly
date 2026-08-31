@@ -52,11 +52,11 @@ export function ProductHero({
   return (
     <section className="grid items-start gap-8 lg:grid-cols-2">
       <div>
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="overflow-hidden rounded-2xl border border-border bg-product-well">
           <ProductImage
             src={active?.url}
             alt={active?.altText ?? title}
-            className="aspect-square w-full bg-surface"
+            className="aspect-square w-full bg-product-well"
             imgClassName="object-contain p-8"
           />
         </div>
@@ -68,7 +68,7 @@ export function ProductHero({
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   className={cn(
-                    "h-14 w-14 overflow-hidden rounded-xl border bg-surface",
+                    "h-14 w-14 overflow-hidden rounded-xl border bg-product-well",
                     index === activeIndex ? "border-accent" : "border-border",
                   )}
                   aria-label={`Show image ${index + 1}`}
@@ -146,7 +146,7 @@ export function ProductHero({
             href={sourceUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-6 inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover"
+            className="mt-6 inline-flex h-10 items-center rounded-xl bg-accent px-4 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
           >
             Manufacturer source
           </a>

@@ -13,6 +13,7 @@ html[data-theme="light"] {
   --accent: #1e4d40;
   --accent-hover: #163f35;
   --accent-soft: #e8f2ee;
+  --accent-foreground: #ffffff;
   --pending: #717171;
   --processing: #5ec8b0;
   --completed: #1e4d40;
@@ -20,28 +21,33 @@ html[data-theme="light"] {
   --review: #c4a35a;
   --brass: #1e4d40;
   --chart: #5ec8b0;
+  --product-well: #f7f5f0;
+  --card-shadow: 0 18px 48px rgb(26 26 26 / 0.08);
   color-scheme: light;
 }
 
 html[data-theme="dark"] {
-  --canvas: #0c1412;
-  --background: #0c1412;
-  --foreground: #f3efe6;
-  --surface: #16211e;
-  --surface-muted: #111a17;
-  --border: rgb(243 239 230 / 0.12);
-  --border-strong: rgb(243 239 230 / 0.22);
-  --muted: #8a9a94;
-  --accent: #5ec8b0;
-  --accent-hover: #7ad4c0;
-  --accent-soft: rgb(94 200 176 / 0.16);
-  --pending: #8a9a94;
-  --processing: #5ec8b0;
-  --completed: #5ec8b0;
-  --failed: #e07a6a;
+  --canvas: #0f0f0e;
+  --background: #0f0f0e;
+  --foreground: #f2efe6;
+  --surface: #1c1b18;
+  --surface-muted: #272621;
+  --border: rgb(242 239 230 / 0.11);
+  --border-strong: rgb(242 239 230 / 0.2);
+  --muted: #9c978c;
+  --accent: #6eb8a6;
+  --accent-hover: #85c6b6;
+  --accent-soft: rgb(110 184 166 / 0.16);
+  --accent-foreground: #0f0f0e;
+  --pending: #9c978c;
+  --processing: #6eb8a6;
+  --completed: #6eb8a6;
+  --failed: #e08a7c;
   --review: #e0c36a;
   --brass: #d4b483;
-  --chart: #5ec8b0;
+  --chart: #6eb8a6;
+  --product-well: #f3f0e8;
+  --card-shadow: 0 24px 64px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
 
@@ -57,6 +63,7 @@ html[data-theme="dark"] {
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
   --color-pending: var(--pending);
   --color-processing: var(--processing);
   --color-completed: var(--completed);
@@ -64,6 +71,7 @@ html[data-theme="dark"] {
   --color-review: var(--review);
   --color-brass: var(--brass);
   --color-chart: var(--chart, #5ec8b0);
+  --color-product-well: var(--product-well);
   --font-sans: var(--font-sans-family);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display-family);
@@ -83,6 +91,11 @@ body {
   background: var(--canvas);
   color: var(--foreground);
   font-family: var(--font-sans-family), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--foreground);
 }
 
 button:focus-visible,
@@ -110,8 +123,8 @@ select:focus-visible {
 
 .landing-grid {
   background-image:
-    linear-gradient(rgb(243 239 230 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(243 239 230 / 0.05) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--foreground) 7%, transparent) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 20%, transparent 72%);
 }
